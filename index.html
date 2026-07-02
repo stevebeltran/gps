@@ -63,48 +63,59 @@
 
     .drop-zone{
       min-height:164px;
-      padding:22px 24px;
+      padding:40px 24px;
       display:flex;
       align-items:center;
       justify-content:center;
-      border:1px solid var(--stroke);
+      border:2px dashed var(--accent);
       border-radius:var(--radius2);
       background:var(--panel);
       box-shadow:var(--shadow);
-      text-align:left;
+      text-align:center;
       cursor:pointer;
       overflow:hidden;
+      transition:min-height .3s ease,padding .3s ease;
     }
-    .drop-zone.dragover{border-color:var(--accent);background:#eff6ff;transform:none}
+    .drop-zone.dragover{border-color:#1d4ed8;background:#eff6ff;transform:none}
     .upload-shell{
       width:100%;
       display:grid;
-      grid-template-columns:auto minmax(220px,1fr) auto;
+      grid-template-columns:1fr;
+      justify-items:center;
       align-items:center;
-      gap:22px;
+      gap:14px;
     }
     .drop-brand{
-      width:188px;
+      width:240px;
       margin:0;
       padding:10px 14px;
-      display:grid;
-      place-items:center;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
       border:1px solid var(--stroke);
       border-radius:14px;
       background:#fff;
       box-shadow:none;
     }
-    .drop-brand img{display:block;width:100%;height:auto}
-    .upload-copy{min-width:0}
+    .drop-brand img{display:block;width:160px;height:auto;flex:none}
+    .brand-gps{
+      color:var(--text);
+      font-size:1.3rem;
+      font-weight:800;
+      letter-spacing:.08em;
+      line-height:1;
+    }
+    .upload-copy{min-width:0;text-align:center}
     .upload-title{
       margin:0 0 4px;
       color:var(--text);
-      font-size:1.45rem;
+      font-size:1.15rem;
       font-weight:800;
-      letter-spacing:-.025em;
+      letter-spacing:-.01em;
     }
-    .upload-note{margin:0;color:var(--muted);font-size:.96rem;line-height:1.5}
-    .drop-actions{display:flex;gap:10px;align-items:center;justify-content:flex-end;flex-wrap:wrap;margin-top:0}
+    .upload-note{margin:0;color:var(--muted2);font-size:.82rem;line-height:1.5}
+    .drop-actions{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:0}
     .hidden-input{display:none}
 
     .toolbar{
@@ -292,8 +303,8 @@
 
     @media(max-width:980px){
       .summary{grid-template-columns:repeat(2,minmax(0,1fr))}
-      .upload-shell{grid-template-columns:1fr;justify-items:start}
-      .drop-actions{justify-content:flex-start}
+      .upload-shell{grid-template-columns:1fr;justify-items:center}
+      .drop-actions{justify-content:center}
       .marker-tools{grid-template-columns:1fr}
       .marker-palette{grid-template-columns:repeat(2,minmax(0,1fr));max-width:none}
       .address-field-grid{grid-template-columns:1fr}
@@ -301,7 +312,9 @@
     @media(max-width:640px){
       .app{width:min(100% - 24px,1180px);padding-top:16px}
       .drop-zone{min-height:0;padding:18px;border-radius:16px}
-      .drop-brand{width:160px}
+      .drop-brand{width:200px}
+      .drop-brand img{width:128px}
+      .brand-gps{font-size:1.1rem}
       .toolbar{align-items:stretch;position:relative;top:auto}
       .toolbar button{width:100%}
       .summary{grid-template-columns:1fr}
@@ -351,10 +364,51 @@
       font-size:.84rem;
       white-space:nowrap;
     }
+    .agency-input{
+      min-height:38px;
+      padding:0 10px;
+      border:1px solid var(--stroke);
+      border-radius:10px;
+      font:inherit;
+      font-size:.84rem;
+      color:var(--text);
+      background:#fff;
+      width:170px;
+    }
+    /* Sticky action rail that follows the page while scrolling */
+    #actionRail{position:fixed;left:14px;top:50%;transform:translateY(-50%);display:none;flex-direction:column;gap:10px;z-index:1500}
+    #actionRail .btn{display:flex;align-items:center;gap:6px;white-space:nowrap;box-shadow:0 3px 10px rgba(16,24,40,.28)}
+    #actionRail .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+    #actionRail .rail-label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#fff;background:#111827;padding:3px 8px;border-radius:4px;text-align:center}
+    /* Wide screens: reserve a left gutter so page content never hides under the rail */
+    @media (min-width:1181px){
+      .app{padding-left:150px}
+    }
+    /* Narrow screens: dock the rail as a bottom bar instead of a left column */
+    @media (max-width:1180px){
+      #actionRail{left:0;right:0;top:auto;bottom:0;transform:none;flex-direction:row;justify-content:center;padding:8px;background:rgba(255,255,255,.95);box-shadow:0 -2px 8px rgba(16,24,40,.15)}
+      #actionRail .rail-label{display:none}
+      body.rail-active .app{padding-bottom:72px}
+    }
     .results-section{order:1}
     .summary{order:2}
     .address-section{order:3}
     .map-section{order:4}
+    /* After photos load: compact upload box, map moves to top directly under it */
+    .app.has-photos .drop-zone{min-height:0;padding:12px 18px}
+    .app.has-photos .upload-shell{grid-template-columns:auto minmax(0,1fr) auto;justify-items:start}
+    .app.has-photos .drop-brand{width:auto;padding:6px 10px}
+    .app.has-photos .drop-brand img{width:84px}
+    .app.has-photos .brand-gps{font-size:1rem}
+    .app.has-photos .upload-copy{text-align:left}
+    .app.has-photos .upload-title{font-size:.95rem}
+    .app.has-photos .upload-note{display:none}
+    .app.has-photos .map-section{order:0}
+    .app.has-photos .status-toolbar{order:1}
+    @media (max-width:760px){
+      .app.has-photos .upload-shell{grid-template-columns:1fr;justify-items:center}
+      .app.has-photos .upload-copy{text-align:center}
+    }
     .section-shell .groups,.section-shell .address-review,.section-shell .map-panel{margin:0}
     .section-shell .address-review,.section-shell .map-panel{background:#fff}
 
@@ -534,10 +588,10 @@
         <input id="fileInput" class="hidden-input" type="file" accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple />
         <input id="directoryInput" class="hidden-input" type="file" accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple webkitdirectory directory />
         <div class="upload-shell">
-          <div class="drop-brand"><img src="data:image/png;base64,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" alt="BRINC" /></div>
+          <div class="drop-brand"><img src="data:image/png;base64,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" alt="BRINC" /><span class="brand-gps">GPS</span></div>
           <div class="upload-copy">
-            <p class="upload-title">Add photos</p>
-            <p class="upload-note">Drag files here or choose a source below.</p>
+            <p class="upload-title"><strong>Drag photos here or click to select</strong></p>
+            <p class="upload-note">Supports JPG, PNG, WEBP, and HEIC. Multiple files accepted.</p>
           </div>
           <div class="drop-actions">
             <button id="selectFilesBtn" class="secondary-btn" type="button">Select Photos</button>
@@ -554,10 +608,10 @@
         <div class="section-head">
           <div class="section-head-copy">
             <h2 class="section-title" id="groups">Grouped Results</h2>
-            <p class="section-subtitle">Station folders appear here immediately after import. Review the folder address, then export.</p>
           </div>
-          <div class="header-actions export-actions">
+          <div class="header-actions export-actions" style="display:none">
             <span class="export-instruction">Verify folder address before export</span>
+            <input id="agencyNameInput" class="agency-input" type="text" placeholder="Agency name" aria-label="Agency name for export file names" />
             <button id="rebuildLookupBtn" class="secondary-btn" type="button">Re-run Lookup</button>
             <button id="downloadBtn" disabled>Download ZIP</button>
             <button id="downloadDocBtn" disabled>Download Word Document</button>
@@ -607,6 +661,12 @@
       </section>
     </section>
   </main>
+
+  <div id="actionRail">
+    <span class="rail-label">Export</span>
+    <button class="btn" id="railDocBtn" disabled>&#128196; Word</button>
+    <button class="btn" id="railZipBtn" disabled>&#128476; ZIP</button>
+  </div>
 
   <div id="annotationModal" class="modal" aria-hidden="true">
     <div class="modal-card">
@@ -683,7 +743,7 @@
     "Iberville Parish Government"
   ];
   const $ = id => document.getElementById(id);
-  const dropZone = $("dropZone"), fileInput = $("fileInput"), directoryInput = $("directoryInput"), selectFilesBtn = $("selectFilesBtn"), selectFolderBtn = $("selectFolderBtn"), statusCard = $("statusCard"), statusText = $("statusText"), previewGrid = $("previewGrid"), directoryTree = $("directoryTree"), clusterMapEl = $("clusterMap"), mapLegend = $("mapLegend"), addressReviewList = $("addressReviewList"), overrideRulesInput = $("overrideRulesInput"), applyOverridesBtn = $("applyOverridesBtn"), rebuildLookupBtn = $("rebuildLookupBtn"), groupsContainer = $("groupsContainer"), downloadBtn = $("downloadBtn"), downloadDocBtn = $("downloadDocBtn");
+  const dropZone = $("dropZone"), fileInput = $("fileInput"), directoryInput = $("directoryInput"), selectFilesBtn = $("selectFilesBtn"), selectFolderBtn = $("selectFolderBtn"), statusCard = $("statusCard"), statusText = $("statusText"), previewGrid = $("previewGrid"), directoryTree = $("directoryTree"), clusterMapEl = $("clusterMap"), mapLegend = $("mapLegend"), addressReviewList = $("addressReviewList"), overrideRulesInput = $("overrideRulesInput"), applyOverridesBtn = $("applyOverridesBtn"), rebuildLookupBtn = $("rebuildLookupBtn"), groupsContainer = $("groupsContainer"), downloadBtn = $("downloadBtn"), downloadDocBtn = $("downloadDocBtn"), agencyNameInput = $("agencyNameInput"), actionRail = $("actionRail"), railZipBtn = $("railZipBtn"), railDocBtn = $("railDocBtn");
   const totalCount = $("totalCount"), gpsCount = $("gpsCount"), missingGpsCount = $("missingGpsCount"), annotatedCount = $("annotatedCount"), groupCount = $("groupCount");
   const annotationModal = $("annotationModal"), modalTitle = $("modalTitle"), modalSubTitle = $("modalSubTitle"), canvas = $("annotationCanvas"), ctx = canvas.getContext("2d"), markerPalette = $("markerPalette"), undoMarkerBtn = $("undoMarkerBtn"), closeModalBtn = $("closeModalBtn"), saveAnnotationBtn = $("saveAnnotationBtn");
   let photos = [], groups = new Map(), seenFiles = new Set(), locationCache = new Map(), activePhoto = null, activeImage = null, clusterMap = null, clusterMapLayer = null;
@@ -711,6 +771,8 @@
   dropZone.addEventListener("drop", async e => { e.preventDefault(); dropZone.classList.remove("dragover"); handleFiles(await getFilesFromDrop(e.dataTransfer)); });
   downloadBtn.addEventListener("click", downloadZip);
   downloadDocBtn.addEventListener("click", downloadWordDocument);
+  railZipBtn.addEventListener("click", downloadZip);
+  railDocBtn.addEventListener("click", downloadWordDocument);
   if(applyOverridesBtn) applyOverridesBtn.addEventListener("click", applyOverridesAndRefresh);
   if(rebuildLookupBtn) rebuildLookupBtn.addEventListener("click", async () => {
     if(!photos.length){ setStatus("Load photos before rebuilding address folders.", false); return; }
@@ -802,7 +864,7 @@
       exportFile = await convertImageToJpeg(file);
       exportFileName = replaceFileExtension(file.name,".jpg");
       previewSource = exportFile;
-      conversionWarning = heic ? "HEIC converted to JPG in-browser for preview/export." : "";
+      conversionWarning = "";
     }catch(err){
       console.warn("JPG conversion failed", file.name, err);
       exportFile = file;
@@ -1878,7 +1940,7 @@
     }catch(err){ console.warn(err); locationCache.set(cacheKey,fallback); return fallback; }
   }
 
-  function render(){ renderMetrics(); renderClusterMap(); renderDirectoryTree(); renderAddressReview(); renderPreviews(); renderGroups(); updateButtons(); }
+  function render(){ $("app").classList.toggle("has-photos", photos.length > 0); renderMetrics(); renderClusterMap(); renderDirectoryTree(); renderAddressReview(); renderPreviews(); renderGroups(); updateButtons(); }
 
   function renderMetrics(){ const withGps = photos.filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon)).length; totalCount.textContent=photos.length; gpsCount.textContent=withGps; missingGpsCount.textContent=photos.length-withGps; annotatedCount.textContent=photos.filter(p=>p.markers.length).length; groupCount.textContent=groups.size; }
 
@@ -2613,7 +2675,7 @@
     if(!requireStreetNumberReviewBeforeExport()) return;
     if(!window.JSZip){ setStatus("ZIP library failed to load. Check internet access and reload.", false); return; }
     setStatus("Building ZIP file with original photos, annotated photos, and report document...",true);
-    downloadBtn.disabled=true; downloadDocBtn.disabled=true;
+    downloadBtn.disabled=true; downloadDocBtn.disabled=true; railZipBtn.disabled=true; railDocBtn.disabled=true;
     try{
       const zip=new JSZip();
       const root = zip.folder("Photos_By_Location");
@@ -2651,7 +2713,7 @@
         }
       }
       const blob=await zip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:6}},m=>setStatus(`Building ZIP file... ${Math.round(m.percent)}%`,true));
-      downloadBlob(blob,"Photos_By_Address_Folders.zip");
+      downloadBlob(blob,makeZipFileName());
       setStatus("ZIP download ready.",false);
     }catch(err){ console.error(err); setStatus("Could not create ZIP file.",false); }
     finally{ updateButtons(); }
@@ -2663,7 +2725,7 @@
     if(!requireStreetNumberReviewBeforeExport()) return;
     if(!window.docx){ setStatus("Word export library failed to load. Check internet access and reload.",false); return; }
     setStatus("Building Word document...",true);
-    downloadBtn.disabled=true; downloadDocBtn.disabled=true;
+    downloadBtn.disabled=true; downloadDocBtn.disabled=true; railZipBtn.disabled=true; railDocBtn.disabled=true;
     try{
       const report=await buildWordDocumentBlob({onProgress:msg=>setStatus(msg,true)});
       downloadBlob(report.blob, report.fileName);
@@ -2677,44 +2739,75 @@
     const annotated=photos.filter(p=>p.markers.length);
     if(!annotated.length) throw new Error("No annotated photos available for Word export");
     const onProgress = typeof options.onProgress === "function" ? options.onProgress : () => {};
-    const {Document,Packer,Paragraph,TextRun,ImageRun,HeadingLevel,AlignmentType,PageBreak}=window.docx;
+    const {Document,Packer,Paragraph,TextRun,ImageRun,AlignmentType,ExternalHyperlink,Table,TableRow,TableCell,WidthType,BorderStyle,Footer,PageNumber}=window.docx;
+    const FONT="Calibri", NAVY="1F3864", GRAY="595959", DARK="2B2B2B", LINK="0563C1";
+    const run=(text,opts={})=>new TextRun({font:FONT,color:DARK,size:19,text,...opts});
+    const metaLine=(label,value)=>new Paragraph({spacing:{after:20},children:[run(`${label}:  `,{bold:true,color:GRAY}),...(Array.isArray(value)?value:[typeof value==="string"?run(value):value])]});
+    const mapsLink=(lat,lon)=>ExternalHyperlink
+      ? new Paragraph({spacing:{before:40,after:220},children:[new ExternalHyperlink({link:googleMapsUrlForGps(lat,lon),children:[new TextRun({text:"View location on Google Maps",style:"Hyperlink",font:FONT,size:19,color:LINK,underline:{}})]})]})
+      : metaLine("Map",googleMapsUrlForGps(lat,lon));
+    const sectionHeading=text=>new Paragraph({spacing:{before:280,after:140},border:{bottom:{style:BorderStyle.SINGLE,color:NAVY,size:12,space:2}},children:[new TextRun({text,bold:true,allCaps:true,color:NAVY,size:26,font:FONT})]});
+    const infoCell=(text,opts)=>new TableCell({width:{size:opts.w,type:WidthType.DXA},margins:{top:60,bottom:60,left:100,right:100},children:[new Paragraph({children:[run(text,opts.label?{bold:true,color:GRAY,size:18}:{size:20})]})]});
+    const infoRow=(label,value)=>new TableRow({children:[infoCell(label,{w:1800,label:true}),infoCell(value || "—",{w:7560})]});
+    const agencyName=cleanFileNamePart(agencyNameInput ? agencyNameInput.value : "");
     const sorted=(options.sorted || getSortedGroups()).filter(g=>g.photos.some(p=>p.markers.length));
     const children=[
-      new Paragraph({text:"Photo Annotation Report",heading:HeadingLevel.TITLE}),
-      new Paragraph({children:[new TextRun({text:"Date of survey: ",bold:true}),new TextRun(formatSurveyDateDisplay(photos))]}),
-      new Paragraph({children:[new TextRun({text:`Generated ${new Date().toLocaleString()}`,italics:true})]}),
-      new Paragraph({text:" "})
+      new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:40},children:[new TextRun({text:"Site Survey Report",bold:true,allCaps:true,color:NAVY,size:44,font:FONT})]}),
+      new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:160},children:[run("DFR Deployment Site Assessment",{color:GRAY,size:20})]}),
+      new Table({
+        width:{size:9360,type:WidthType.DXA},
+        borders:{top:{style:BorderStyle.SINGLE,color:"BFBFBF",size:4},bottom:{style:BorderStyle.SINGLE,color:"BFBFBF",size:4},insideHorizontal:{style:BorderStyle.SINGLE,color:"BFBFBF",size:2},left:{style:BorderStyle.NONE},right:{style:BorderStyle.NONE},insideVertical:{style:BorderStyle.NONE}},
+        rows:[
+          infoRow("AGENCY",agencyName),
+          infoRow("SURVEY DATE",formatSurveyDateDisplay(photos)),
+          infoRow("GENERATED",new Date().toLocaleString())
+        ]
+      }),
+      new Paragraph({spacing:{after:120},children:[run("")]})
     ];
     let idx=0;
     for(let gi=0;gi<sorted.length;gi++){
       const g=sorted[gi], imgs=g.photos.filter(p=>p.markers.length).sort(comparePhotoTime);
-      children.push(new Paragraph({text:g.name || "Unknown Location",heading:HeadingLevel.HEADING_1}));
-      children.push(new Paragraph({children:[new TextRun({text:"Date of survey: ",bold:true}),new TextRun(formatSurveyDateDisplay(g.photos))]}));
-      children.push(new Paragraph({children:[new TextRun({text:"Common name / Address: ",bold:true}),new TextRun([g.placeName,g.address].filter(Boolean).join(" | ") || "Unknown")]}));
-      if(Number.isFinite(g.centroidLat) && Number.isFinite(g.centroidLon)){
-        const gpsLink = makeGpsHyperlink(g.centroidLat, g.centroidLon);
-        children.push(new Paragraph({children:[new TextRun({text:"GPS centroid: ",bold:true}),gpsLink || new TextRun(formatGpsCoordinates(g.centroidLat, g.centroidLon))]}));
-      }
-      children.push(new Paragraph({text:" "}));
+      children.push(sectionHeading(g.name || "Unknown Location"));
+      const addressText=[g.placeName,g.address].filter(Boolean).join(" | ");
+      if(addressText) children.push(metaLine("Address",addressText));
+      children.push(metaLine("Date of survey",formatSurveyDateDisplay(g.photos)));
+      if(Number.isFinite(g.centroidLat) && Number.isFinite(g.centroidLon)) children.push(mapsLink(g.centroidLat,g.centroidLon));
       for(let pi=0;pi<imgs.length;pi++){
         const p=imgs[pi];
         idx++;
         onProgress(`Adding annotated image ${idx} of ${annotated.length}...`);
-        const dataUrl=await getAnnotatedImageDataUrl(p,960,.72), bytes=dataUrlToUint8Array(dataUrl), img=await loadImage(dataUrl), maxW=576, ratio=Math.min(1,maxW/img.naturalWidth), width=Math.round(img.naturalWidth*ratio), height=Math.round(img.naturalHeight*ratio);
-        children.push(new Paragraph({text:p.fileName,heading:HeadingLevel.HEADING_2}));
-        children.push(new Paragraph({children:[new TextRun({text:"Captured: ",bold:true}),new TextRun(formatDateForDisplay(p.capturedAt))]}));
-        if(Number.isFinite(p.lat)&&Number.isFinite(p.lon)){
-          const gpsLink = makeGpsHyperlink(p.lat, p.lon);
-          children.push(new Paragraph({children:[new TextRun({text:"GPS: ",bold:true}),gpsLink || new TextRun(formatGpsCoordinates(p.lat, p.lon))]}));
-        }
-        children.push(new Paragraph({children:[new TextRun({text:"Markers: ",bold:true}),new TextRun(p.markers.map((m,i)=>`${i+1}. ${getMarkerOption(m.type).symbol} ${getMarkerOption(m.type).label}`).join("; "))]}));
-        children.push(new Paragraph({text:" "}));
-        children.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:bytes,transformation:{width,height}})]}));
-        if(!(gi===sorted.length-1 && pi===imgs.length-1)) children.push(new Paragraph({children:[new PageBreak()]}));
+        const dataUrl=await getAnnotatedImageDataUrl(p,960,.72), bytes=dataUrlToUint8Array(dataUrl), img=await loadImage(dataUrl), maxW=500, ratio=Math.min(1,maxW/img.naturalWidth), width=Math.round(img.naturalWidth*ratio), height=Math.round(img.naturalHeight*ratio);
+        children.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:80,after:40},children:[new ImageRun({data:bytes,transformation:{width,height}})]}));
+        children.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:100},children:[run(`Figure ${idx}. ${p.fileName}`,{italics:true,color:GRAY,size:18})]}));
+        children.push(metaLine("Date",formatDateForDisplay(p.capturedAt)));
+        if(Number.isFinite(p.lat)&&Number.isFinite(p.lon)) children.push(metaLine("Coordinates",formatGpsCoordinates(p.lat,p.lon)));
+        children.push(metaLine("Markers",p.markers.map((m,i)=>`${i+1}. ${getMarkerOption(m.type).symbol} ${getMarkerOption(m.type).label}`).join("; ")));
+        if(Number.isFinite(p.lat)&&Number.isFinite(p.lon)) children.push(mapsLink(p.lat,p.lon));
         await idlePause();
       }
     }
-    const doc=new Document({creator:"BRINC TANK Photo Location Grouper",title:"Photo Annotation Report",description:"Annotated photo report generated in browser.",sections:[{properties:{page:{margin:{top:720,right:720,bottom:720,left:720}}},children}]});
+    const allGroups=getSortedGroups();
+    if(allGroups.length){
+      children.push(new Paragraph({spacing:{before:400,after:140},border:{bottom:{style:BorderStyle.SINGLE,color:NAVY,size:12,space:2}},children:[new TextRun({text:"Location Clusters",bold:true,allCaps:true,color:NAVY,size:26,font:FONT})]}));
+      children.push(new Paragraph({spacing:{after:160},children:[run(`${allGroups.length} location${allGroups.length===1?"":"s"} · ${photos.length} photos total`,{color:GRAY})]}));
+      allGroups.forEach((g,i)=>{
+        children.push(new Paragraph({spacing:{before:160,after:40},children:[run(`${i+1}. ${g.name || "Unknown Location"}`,{bold:true,size:22})]}));
+        children.push(metaLine("Photos",`${g.photos.length} (${g.photos.filter(p=>p.markers.length).length} annotated)`));
+        if(Number.isFinite(g.centroidLat) && Number.isFinite(g.centroidLon)){
+          children.push(metaLine("Coordinates",formatGpsCoordinates(g.centroidLat,g.centroidLon)));
+          children.push(mapsLink(g.centroidLat,g.centroidLon));
+        }
+      });
+    }
+    const footer=Footer && PageNumber ? new Footer({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:"Page ",font:FONT,color:"808080",size:16}),new TextRun({children:[PageNumber.CURRENT],font:FONT,color:"808080",size:16})]})]}) : null;
+    const doc=new Document({
+      creator:"BRINC TANK Photo Location Grouper",
+      title:"Site Survey Report",
+      description:"DFR deployment site assessment generated in browser.",
+      styles:{default:{document:{run:{font:FONT,color:DARK,size:20}}}},
+      sections:[{properties:{page:{margin:{top:1440,right:1440,bottom:1440,left:1440}}},...(footer?{footers:{default:footer}}:{}),children}]
+    });
     const blob=await Packer.toBlob(doc);
     return {blob,fileName:makeWordDocumentFileName(sorted)};
   }
@@ -2789,6 +2882,10 @@
     const surveyText = firstText === lastText ? firstText : `${firstText}_to_${lastText}`;
     return sanitizeFileName(`${city}_${surveyText}_Annotated_Photos.docx`);
   }
+  function makeZipFileName(){
+    const agency = cleanFileNamePart(agencyNameInput ? agencyNameInput.value : "") || "Agency";
+    return sanitizeFileName(`${agency}_${formatFileTimestamp(new Date())}.zip`);
+  }
   function formatFileTimestamp(date){
     const pad = n => String(n).padStart(2,"0");
     return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}_${pad(date.getHours())}-${pad(date.getMinutes())}-${pad(date.getSeconds())}`;
@@ -2806,7 +2903,14 @@
   function formatDateForDisplay(d){ return d instanceof Date && !Number.isNaN(d.getTime()) ? d.toLocaleString() : "Unknown"; }
   function abbreviateState(state){ const map={"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY","District of Columbia":"DC"}; return map[state] || state; }
   function setStatus(msg,processing){ statusText.textContent=msg; statusCard.classList.toggle("processing",!!processing); }
-  function updateButtons(){ downloadBtn.disabled=photos.length===0; downloadDocBtn.disabled=photos.filter(p=>p.markers.length).length===0; }
+  function updateButtons(){
+    const zipDisabled=photos.length===0, docDisabled=photos.filter(p=>p.markers.length).length===0;
+    downloadBtn.disabled=zipDisabled; downloadDocBtn.disabled=docDisabled;
+    railZipBtn.disabled=zipDisabled; railDocBtn.disabled=docDisabled;
+    const showRail=photos.length>0;
+    actionRail.style.display=showRail?"flex":"none";
+    document.body.classList.toggle("rail-active",showRail);
+  }
   function escapeHtml(v){ return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
   function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
   function clamp(v,min,max){ return Math.min(max,Math.max(min,v)); }
