@@ -812,11 +812,22 @@
   });
   closeModalBtn.addEventListener("click", closeAnnotationModal);
   saveAnnotationBtn.addEventListener("click", () => { closeAnnotationModal(); render(); });
-  undoMarkerBtn.addEventListener("click", () => { if(activePhoto){ activePhoto.markers.pop(); drawAnnotationCanvas(); render(); } });
+  undoMarkerBtn.addEventListener("click", () => {
+    if(!activePhoto || !activePhoto.annHistory) return;
+    const last = activePhoto.annHistory.pop();
+    if(last === "drawing") activePhoto.drawings.pop();
+    else if(last === "marker") activePhoto.markers.pop();
+    else return;
+    drawAnnotationCanvas(); render();
+  });
   annotationModal.addEventListener("click", e => { if(e.target === annotationModal) closeAnnotationModal(); });
   document.addEventListener("keydown", e => { if(e.key === "Escape") closeAnnotationModal(); });
-  canvas.addEventListener("pointerdown", addMarkerFromCanvasEvent);
-  canvas.addEventListener("click", e => { if(!window.PointerEvent) addMarkerFromCanvasEvent(e); });
+  canvas.addEventListener("pointerdown", handleCanvasPointerDown);
+  canvas.addEventListener("pointermove", handleCanvasPointerMove);
+  canvas.addEventListener("pointerup", endPenStroke);
+  canvas.addEventListener("pointerleave", endPenStroke);
+  canvas.addEventListener("click", e => { if(!window.PointerEvent && activeTool === "marker") addMarkerFromCanvasEvent(e); });
+  document.querySelectorAll("#drawTools .draw-btn").forEach(btn => btn.addEventListener("click", () => setActiveDrawTool(btn.dataset.tool, btn.dataset.symbol)));
   renderMarkerPalette(); render();
 
   function addMarkerFromCanvasEvent(e){
@@ -830,6 +841,8 @@
     const y = (clientY - rect.top) / rect.height;
     const markerType = activeMarkerType || (MARKER_OPTIONS[0] && MARKER_OPTIONS[0].id) || "marker";
     activePhoto.markers.push({ type: markerType, x: clamp(x,.02,.98), y: clamp(y,.02,.98) });
+    if(!activePhoto.annHistory) activePhoto.annHistory = [];
+    activePhoto.annHistory.push("marker");
     try{
       drawAnnotationCanvas();
       renderMetrics();
@@ -840,6 +853,73 @@
       console.error("Annotation draw failed", err);
       setStatus(`Annotation draw failed: ${err && err.message ? err.message : "unknown error"}`, false);
     }
+  }
+
+  function setActiveDrawTool(tool, symbol){
+    activeTool = tool;
+    if(tool === "symbol" && symbol) activeSymbol = symbol;
+    document.querySelectorAll("#drawTools .draw-btn").forEach(b => {
+      const isActive = b.dataset.tool === activeTool && (activeTool !== "symbol" || b.dataset.symbol === activeSymbol);
+      b.classList.toggle("active", isActive);
+    });
+    renderMarkerPalette();
+    if(tool === "text"){ const t = $("drawTextInput"); if(t) t.focus(); }
+  }
+  function getNormalizedCanvasPos(e){
+    const rect = canvas.getBoundingClientRect();
+    if(!rect.width || !rect.height) return null;
+    const clientX = Number.isFinite(e.clientX) ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : rect.left + rect.width / 2);
+    const clientY = Number.isFinite(e.clientY) ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : rect.top + rect.height / 2);
+    return { x:(clientX - rect.left) / rect.width, y:(clientY - rect.top) / rect.height };
+  }
+  function refreshAfterAnnotationChange(){
+    try{ drawAnnotationCanvas(); renderMetrics(); renderPreviews(); renderGroups(); updateButtons(); }
+    catch(err){ console.error("Annotation draw failed", err); setStatus(`Annotation draw failed: ${err && err.message ? err.message : "unknown error"}`, false); }
+  }
+  function commitDrawing(stroke){
+    if(!activePhoto) return;
+    if(!activePhoto.drawings) activePhoto.drawings = [];
+    if(!activePhoto.annHistory) activePhoto.annHistory = [];
+    activePhoto.drawings.push(stroke);
+    activePhoto.annHistory.push("drawing");
+    refreshAfterAnnotationChange();
+  }
+  function handleCanvasPointerDown(e){
+    if(!activePhoto || !activeImage) return;
+    if(activeTool === "marker"){ addMarkerFromCanvasEvent(e); return; }
+    if(e && e.preventDefault) e.preventDefault();
+    const pos = getNormalizedCanvasPos(e);
+    if(!pos) return;
+    if(activeTool === "text"){
+      const text = ($("drawTextInput").value || "").trim();
+      if(!text){ setStatus('Type the label in the "Text to place" box first, then click the photo.', false); return; }
+      commitDrawing({ type:"text", text, x:pos.x, y:pos.y, color:$("drawColor").value });
+      return;
+    }
+    if(activeTool === "symbol"){
+      commitDrawing({ type:"symbol", symbol:activeSymbol, x:pos.x, y:pos.y, color:DRAW_SYMBOL_COLORS[activeSymbol] || $("drawColor").value });
+      return;
+    }
+    if(activeTool === "pen"){
+      penDrawing = true;
+      currentStroke = { type:"pen", color:$("drawColor").value, width:parseInt($("drawWidth").value, 10) || 4, points:[pos] };
+    }
+  }
+  function handleCanvasPointerMove(e){
+    if(!penDrawing || activeTool !== "pen" || !currentStroke) return;
+    const pos = getNormalizedCanvasPos(e);
+    if(!pos) return;
+    currentStroke.points.push(pos);
+    drawAnnotationCanvas();
+  }
+  function endPenStroke(){
+    if(penDrawing && currentStroke && currentStroke.points.length > 1){
+      const stroke = currentStroke;
+      currentStroke = null; penDrawing = false;
+      commitDrawing(stroke);
+      return;
+    }
+    currentStroke = null; penDrawing = false;
   }
 
   async function handleFiles(files){
@@ -2451,12 +2531,15 @@
   function makeFallbackLocation(lat,lon){ return { folderName:sanitizeFolderName(`Lat_${Number(lat).toFixed(5)}_Lon_${Number(lon).toFixed(5)}`), addressLine:`${Number(lat).toFixed(5)}, ${Number(lon).toFixed(5)}`, placeName:"Reverse geocode unavailable", city:"", county:"", state:"", postcode:"", displayName:"", distanceMeters:null, streetAddressFound:false, hasStreetNumber:false, candidates:[], addressSource:"Coordinate fallback", addressConfidence:"Coordinate fallback; verify full street address manually" }; }
   function looksLikeInteriorPhoto(fileName, relativePath){ const text = String(`${relativePath || ""} ${fileName || ""}`).replace(/[_.-]+/g," ").toLowerCase(); return /\b(interior|inside|indoor|room|lobby|hallway|hall|foyer|vestibule|closet|electrical room|mechanical room|server room|control room|equipment room|panel|rack|cabinet|shelter|building interior|inside building|station interior)\b/i.test(text); }
 
-  function renderMarkerPalette(){ markerPalette.innerHTML = MARKER_OPTIONS.map(o=>`<button class="tool-btn ${o.id===activeMarkerType?"active":""}" type="button" data-marker-id="${o.id}"><span class="tool-symbol" style="color:${o.color};border-color:${o.color}">${escapeHtml(o.symbol)}</span><span class="tool-text"><strong>${escapeHtml(o.category)}</strong><span>${escapeHtml(o.label)}</span></span></button>`).join(""); markerPalette.querySelectorAll("[data-marker-id]").forEach(b=>b.addEventListener("click",()=>{ activeMarkerType=b.dataset.markerId; renderMarkerPalette(); fitAnnotationCanvasToViewport(); })); }
+  function renderMarkerPalette(){ markerPalette.innerHTML = MARKER_OPTIONS.map(o=>`<button class="tool-btn ${o.id===activeMarkerType && activeTool==="marker"?"active":""}" type="button" data-marker-id="${o.id}"><span class="tool-symbol" style="color:${o.color};border-color:${o.color}">${escapeHtml(o.symbol)}</span><span class="tool-text"><strong>${escapeHtml(o.category)}</strong><span>${escapeHtml(o.label)}</span></span></button>`).join(""); markerPalette.querySelectorAll("[data-marker-id]").forEach(b=>b.addEventListener("click",()=>{ activeMarkerType=b.dataset.markerId; setActiveDrawTool("marker"); })); }
   function openAnnotationModal(photoId){
     activePhoto = photos.find(p=>p.id===photoId);
     if(!activePhoto) return;
     modalTitle.textContent = `Annotate: ${activePhoto.fileName}`;
     modalSubTitle.textContent = activePhoto.groupName || "Ungrouped";
+    setActiveDrawTool("marker");
+    const drawTextInput = $("drawTextInput");
+    if(drawTextInput) drawTextInput.value = "";
     activeImage = new Image();
     activeImage.onload = () => {
       annotationModal.classList.add("open");
