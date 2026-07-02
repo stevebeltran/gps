@@ -761,6 +761,12 @@
   ];
   const MARKUP_FONT = '"Aptos","IBM Plex Sans","Segoe UI",Arial,sans-serif';
   let activeMarkerType = MARKER_OPTIONS[0].id;
+  const DRAW_SYMBOL_LABELS = { power:"PWR", ethernet:"ETH", rf:"RF", crane:"CRANE", unistrut:"STRUT" };
+  // Engineering color conventions: power=red (APWA electrical), ethernet=blue (TIA-606),
+  // rf=orange (APWA comms), crane=safety yellow (OSHA), unistrut=galvanized gray.
+  const DRAW_SYMBOL_COLORS = { power:"#e60000", ethernet:"#0057b8", rf:"#ff7a00", crane:"#ffd100", unistrut:"#9ea3a8" };
+  const DRAW_SYMBOL_NAMES = { power:"Power", ethernet:"Ethernet", rf:"RF", crane:"Crane", unistrut:"Unistrut" };
+  let activeTool = "marker", activeSymbol = "power", currentStroke = null, penDrawing = false;
 
   selectFilesBtn.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); fileInput.click(); });
   selectFolderBtn.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); directoryInput.click(); });
@@ -882,12 +888,12 @@
     const nameCapturedAt = parseDateTimeFromFileName(`${relativePath} ${file.name}`);
     const capturedAt = exif.capturedAt || nameCapturedAt || (file.lastModified ? new Date(file.lastModified) : new Date());
     const noGpsWarning = "";
-    return { id: makeId(), file, exportFile, fileName:file.name, exportFileName, relativePath, lat:exif.gps ? exif.gps.lat : null, lon:exif.gps ? exif.gps.lon : null, capturedAt, groupName:"Pending", address:"", placeName:"", city:"", county:"", state:"", addressConfidence:"", addressSource:"", matchedTimeReason:"", associationMethod:exif.gps ? "gps-tagged" : "pending-time-match", isInteriorCandidate:looksLikeInteriorPhoto(file.name, relativePath), isAddressAnchor:false, warning:[conversionWarning,noGpsWarning].filter(Boolean).join(" "), previewUrl, markers:[] };
+    return { id: makeId(), file, exportFile, fileName:file.name, exportFileName, relativePath, lat:exif.gps ? exif.gps.lat : null, lon:exif.gps ? exif.gps.lon : null, capturedAt, groupName:"Pending", address:"", placeName:"", city:"", county:"", state:"", addressConfidence:"", addressSource:"", matchedTimeReason:"", associationMethod:exif.gps ? "gps-tagged" : "pending-time-match", isInteriorCandidate:looksLikeInteriorPhoto(file.name, relativePath), isAddressAnchor:false, warning:[conversionWarning,noGpsWarning].filter(Boolean).join(" "), previewUrl, markers:[], drawings:[], annHistory:[] };
   }
 
   function makeFallbackPhoto(file, warning){
     const relativePath = file.webkitRelativePath || file.name;
-    return { id:makeId(), file, exportFile:file, fileName:file.name, exportFileName:file.name, relativePath, previewUrl:URL.createObjectURL(file), lat:null, lon:null, capturedAt:parseDateTimeFromFileName(relativePath || file.name) || (file.lastModified ? new Date(file.lastModified) : new Date()), groupName:"Pending", address:"", placeName:"", city:"", county:"", state:"", addressConfidence:"", addressSource:"", matchedTimeReason:"", associationMethod:"pending-time-match", isInteriorCandidate:looksLikeInteriorPhoto(file.name, relativePath), isAddressAnchor:false, warning:warning || "Could not process image metadata.", markers:[] };
+    return { id:makeId(), file, exportFile:file, fileName:file.name, exportFileName:file.name, relativePath, previewUrl:URL.createObjectURL(file), lat:null, lon:null, capturedAt:parseDateTimeFromFileName(relativePath || file.name) || (file.lastModified ? new Date(file.lastModified) : new Date()), groupName:"Pending", address:"", placeName:"", city:"", county:"", state:"", addressConfidence:"", addressSource:"", matchedTimeReason:"", associationMethod:"pending-time-match", isInteriorCandidate:looksLikeInteriorPhoto(file.name, relativePath), isAddressAnchor:false, warning:warning || "Could not process image metadata.", markers:[], drawings:[], annHistory:[] };
   }
 
   async function readExifSafe(file){
@@ -2667,6 +2673,63 @@
     return lines;
   }
   function roundedRect(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
+  function contrastColor(hex){
+    const c=hex.replace("#",""), r=parseInt(c.substr(0,2),16), g=parseInt(c.substr(2,2),16), b=parseInt(c.substr(4,2),16);
+    return ((0.299*r+0.587*g+0.114*b)/255) > 0.6 ? "#000000" : "#ffffff";
+  }
+  function drawSymbolIcon(c,type,cx,cy,size,color){
+    const s=size, base=Math.max(1.5,size*0.11), halo=Math.max(2,size*0.14), contrast=contrastColor(color);
+    c.save(); c.lineCap="round"; c.lineJoin="round";
+    const buildStroke=()=>{
+      if(type==="ethernet"){
+        c.beginPath(); c.rect(cx-s*0.7,cy-s*0.5,s*1.4,s); c.stroke();
+        c.beginPath(); c.rect(cx-s*0.2,cy+s*0.5,s*0.4,s*0.3); c.stroke();
+        for(let i=-2;i<=2;i++){ c.beginPath(); c.moveTo(cx+i*s*0.22,cy-s*0.5); c.lineTo(cx+i*s*0.22,cy-s*0.1); c.stroke(); }
+      }else if(type==="rf"){
+        c.beginPath(); c.moveTo(cx,cy+s); c.lineTo(cx,cy-s*0.2); c.stroke();
+        c.beginPath(); c.moveTo(cx-s*0.4,cy-s); c.lineTo(cx,cy-s*0.2); c.lineTo(cx+s*0.4,cy-s); c.stroke();
+        for(let r=1;r<=3;r++){ c.beginPath(); c.arc(cx,cy-s*0.2,s*0.3*r,-Math.PI*0.85,-Math.PI*0.15); c.stroke(); }
+      }else if(type==="crane"){
+        c.beginPath(); c.moveTo(cx-s*0.5,cy+s); c.lineTo(cx-s*0.5,cy-s*0.6); c.stroke();
+        c.beginPath(); c.moveTo(cx-s,cy-s*0.6); c.lineTo(cx+s,cy-s*0.6); c.stroke();
+        c.beginPath(); c.moveTo(cx+s*0.6,cy-s*0.6); c.lineTo(cx+s*0.6,cy+s*0.2); c.stroke();
+        c.beginPath(); c.moveTo(cx-s,cy-s*0.6); c.lineTo(cx-s*0.5,cy-s*0.6-s*0.4); c.lineTo(cx-s*0.5,cy-s*0.6); c.stroke();
+      }else if(type==="unistrut"){
+        c.beginPath(); c.moveTo(cx+s*0.6,cy-s*0.7); c.lineTo(cx-s*0.6,cy-s*0.7); c.lineTo(cx-s*0.6,cy+s*0.7); c.lineTo(cx+s*0.6,cy+s*0.7); c.stroke();
+        c.beginPath(); c.moveTo(cx+s*0.6,cy-s*0.7); c.lineTo(cx+s*0.6,cy-s*0.35); c.moveTo(cx+s*0.6,cy+s*0.7); c.lineTo(cx+s*0.6,cy+s*0.35); c.stroke();
+      }
+    };
+    if(type==="power"){
+      c.beginPath();
+      c.moveTo(cx+s*0.15,cy-s); c.lineTo(cx-s*0.35,cy+s*0.1); c.lineTo(cx+s*0.05,cy+s*0.1);
+      c.lineTo(cx-s*0.15,cy+s); c.lineTo(cx+s*0.4,cy-s*0.2); c.lineTo(cx,cy-s*0.2); c.closePath();
+      c.lineWidth=halo*1.6; c.strokeStyle=contrast; c.stroke(); c.fillStyle=color; c.fill();
+    }else{
+      c.strokeStyle=contrast; c.lineWidth=base+halo; buildStroke();
+      c.strokeStyle=color; c.lineWidth=base; buildStroke();
+    }
+    const fontPx=Math.max(9,size*0.6);
+    c.font=`bold ${fontPx}px ${MARKUP_FONT}`; c.textAlign="center"; c.textBaseline="top";
+    const label=DRAW_SYMBOL_LABELS[type] || type;
+    c.lineWidth=Math.max(2,fontPx*0.3); c.strokeStyle=contrast; c.strokeText(label,cx,cy+s*1.15);
+    c.fillStyle=color; c.fillText(label,cx,cy+s*1.15);
+    c.restore();
+  }
+  function drawStroke(c,stroke,cw,ch){
+    if(stroke.type==="pen"){
+      if(!stroke.points || !stroke.points.length) return;
+      c.save(); c.strokeStyle=stroke.color; c.lineWidth=stroke.width; c.lineCap="round"; c.lineJoin="round";
+      c.beginPath();
+      stroke.points.forEach((p,i)=>{ const x=p.x*cw, y=p.y*ch; if(i===0) c.moveTo(x,y); else c.lineTo(x,y); });
+      c.stroke(); c.restore();
+    }else if(stroke.type==="text"){
+      c.save(); c.fillStyle=stroke.color; c.textAlign="left"; c.textBaseline="alphabetic";
+      c.font=`700 ${Math.max(12,ch*0.03)}px ${MARKUP_FONT}`;
+      c.fillText(stroke.text,stroke.x*cw,stroke.y*ch); c.restore();
+    }else if(stroke.type==="symbol"){
+      drawSymbolIcon(c,stroke.symbol,stroke.x*cw,stroke.y*ch,ch*0.045,stroke.color);
+    }
+  }
   async function getAnnotatedImageDataUrl(photo,maxWidth=960,quality=.72){ const img=await loadImage(photo.previewUrl); const scale=Math.min(1,maxWidth/img.naturalWidth); const off=document.createElement("canvas"); off.width=Math.max(1,Math.round(img.naturalWidth*scale)); off.height=Math.max(1,Math.round(img.naturalHeight*scale)); drawAnnotationCanvas(off,img,photo); return off.toDataURL("image/jpeg",quality); }
   function loadImage(src){ return new Promise((resolve,reject)=>{ const img=new Image(); img.onload=()=>resolve(img); img.onerror=reject; img.src=src; }); }
 
