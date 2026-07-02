@@ -1,0 +1,2304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="BRINC TANK single-page photo location grouper and annotation app" />
+  <title>BRINC TANK | Station Address Cluster</title>
+  <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/heic-to@1.5.2/dist/iife/heic-to.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/lite.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exifreader@4.41.0/dist/exif-reader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root{
+      --bg:#020407;
+      --bg2:#07111c;
+      --bg3:#0b1624;
+      --panel:rgba(8,18,31,.86);
+      --panel2:rgba(14,26,42,.76);
+      --panel3:rgba(255,255,255,.055);
+      --stroke:rgba(255,255,255,.12);
+      --stroke2:rgba(125,211,252,.34);
+      --stroke3:rgba(250,204,21,.28);
+      --text:#f8fafc;
+      --muted:#9aa8bb;
+      --muted2:#65758b;
+      --accent:#38bdf8;
+      --accent2:#facc15;
+      --accent3:#14f195;
+      --danger:#fb7185;
+      --warnbg:rgba(251,113,133,.10);
+      --warnbd:rgba(251,113,133,.28);
+      --shadow:0 28px 80px rgba(0,0,0,.45);
+      --radius:24px;
+      --radius2:34px;
+      --font:"Inter","Aptos","Segoe UI",Arial,sans-serif;
+      --mono:"JetBrains Mono","Cascadia Mono","SFMono-Regular",Consolas,monospace;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      min-height:100vh;
+      color:var(--text);
+      font-family:var(--font);
+      background:
+        radial-gradient(circle at 14% 4%,rgba(56,189,248,.18),transparent 27rem),
+        radial-gradient(circle at 88% 8%,rgba(250,204,21,.13),transparent 23rem),
+        radial-gradient(circle at 76% 74%,rgba(20,241,149,.10),transparent 28rem),
+        linear-gradient(145deg,var(--bg),var(--bg2) 58%,#020407);
+      overflow-x:hidden;
+    }
+    body:before{
+      content:"";
+      position:fixed;
+      inset:0;
+      z-index:-3;
+      background:
+        linear-gradient(rgba(56,189,248,.055) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(56,189,248,.055) 1px,transparent 1px);
+      background-size:42px 42px;
+      mask-image:linear-gradient(to bottom,rgba(0,0,0,.94),rgba(0,0,0,.32));
+      pointer-events:none;
+    }
+    body:after{
+      content:"";
+      position:fixed;
+      inset:-20%;
+      z-index:-2;
+      background:conic-gradient(from 190deg at 50% 50%,rgba(56,189,248,.08),transparent,rgba(250,204,21,.07),transparent,rgba(20,241,149,.07),transparent);
+      animation:rotateGlow 24s linear infinite;
+      pointer-events:none;
+    }
+    @keyframes rotateGlow{to{transform:rotate(360deg)}}
+    button,input{font:inherit}
+    button{border:0;cursor:pointer}
+    .noise{
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      pointer-events:none;
+      opacity:.16;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.36'/%3E%3C/svg%3E");
+      mix-blend-mode:screen;
+    }
+    .app{width:min(1240px,calc(100% - 36px));margin:0 auto;padding:16px 0 72px}
+    .topbar{
+      position:sticky;
+      top:14px;
+      z-index:20;
+      margin:0 0 28px;
+      border:1px solid var(--stroke);
+      background:linear-gradient(180deg,rgba(5,10,18,.86),rgba(5,10,18,.56));
+      backdrop-filter:blur(18px);
+      box-shadow:0 18px 55px rgba(0,0,0,.28);
+      border-radius:999px;
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .brand{display:flex;align-items:center;gap:14px;min-width:0}
+    .brand-mark{
+      display:grid;
+      place-items:center;
+      width:156px;
+      height:48px;
+      border-radius:999px;
+      padding:0 16px;
+      background:rgba(255,255,255,.055);
+      border:1px solid rgba(255,255,255,.13);
+      box-shadow:inset 0 0 0 1px rgba(56,189,248,.06);
+      flex:none;
+    }
+    .brand-mark img{display:block;width:100%;height:auto}
+    .brand-text{display:flex;flex-direction:column;line-height:1.05;white-space:nowrap}
+    .brand-text strong{font-size:.8rem;letter-spacing:.16em;text-transform:uppercase}
+    .brand-text span{font-family:var(--mono);font-size:.68rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+    .nav{display:flex;align-items:center;gap:4px}
+    .nav a{
+      color:#d8e2ee;
+      font-size:.84rem;
+      font-weight:850;
+      letter-spacing:.02em;
+      padding:11px 13px;
+      border-radius:999px;
+      text-decoration:none;
+      transition:.18s ease;
+    }
+    .nav a:hover{background:rgba(255,255,255,.075);color:#fff}
+    .hero{
+      position:relative;
+      overflow:hidden;
+      border:1px solid var(--stroke);
+      border-radius:var(--radius2);
+      background:
+        linear-gradient(135deg,rgba(56,189,248,.16),rgba(255,255,255,.04) 34%,rgba(250,204,21,.10) 100%),
+        radial-gradient(circle at 16% 20%,rgba(56,189,248,.20),transparent 20rem),
+        radial-gradient(circle at 84% 76%,rgba(20,241,149,.15),transparent 24rem),
+        rgba(5,10,18,.72);
+      box-shadow:var(--shadow);
+      padding:clamp(24px,4vw,42px);
+      display:grid;
+      grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr);
+      gap:28px;
+      align-items:stretch;
+    }
+    .hero:before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:
+        linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);
+      background-size:58px 58px;
+      mask-image:radial-gradient(circle at 50% 30%,#000,transparent 74%);
+    }
+    .hero-content,.mission-card{position:relative;z-index:1}
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:9px;
+      margin:0 0 16px;
+      padding:8px 12px;
+      border:1px solid rgba(56,189,248,.26);
+      border-radius:999px;
+      background:rgba(56,189,248,.08);
+      color:#dff7ff;
+      font-family:var(--mono);
+      font-size:.72rem;
+      font-weight:900;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+    .pulse{width:8px;height:8px;border-radius:50%;background:var(--accent3);box-shadow:0 0 0 0 rgba(20,241,149,.55);animation:pulse 1.8s infinite}
+    @keyframes pulse{70%{box-shadow:0 0 0 12px rgba(20,241,149,0)}100%{box-shadow:0 0 0 0 rgba(20,241,149,0)}}
+    h1{
+      margin:0;
+      max-width:900px;
+      font-size:clamp(2.5rem,7vw,6.8rem);
+      line-height:.88;
+      letter-spacing:-.07em;
+      font-weight:1000;
+      text-transform:uppercase;
+    }
+    .hero-copy{max-width:760px;margin:22px 0 0;color:#c7d4e5;font-size:clamp(1rem,1.6vw,1.18rem);line-height:1.7}
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+    .chip-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+    .chip{
+      padding:8px 11px;
+      border:1px solid var(--stroke);
+      border-radius:999px;
+      background:rgba(255,255,255,.055);
+      color:#dbeafe;
+      font-family:var(--mono);
+      font-size:.72rem;
+      font-weight:800;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+    .mission-card{
+      align-self:stretch;
+      min-height:320px;
+      border-radius:26px;
+      border:1px solid rgba(125,211,252,.24);
+      background:linear-gradient(180deg,rgba(4,11,22,.74),rgba(14,26,42,.70));
+      padding:22px;
+      overflow:hidden;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.04),0 20px 60px rgba(0,0,0,.24);
+    }
+    .radar{position:relative;height:100%;min-height:276px;border-radius:20px;background:radial-gradient(circle,rgba(56,189,248,.16) 0 1px,transparent 2px),radial-gradient(circle at 50% 50%,rgba(56,189,248,.18),transparent 38%),rgba(2,6,13,.55);background-size:22px 22px,auto,auto;overflow:hidden;border:1px solid rgba(255,255,255,.10)}
+    .radar:before{content:"";position:absolute;inset:13%;border:1px solid rgba(56,189,248,.28);border-radius:50%;box-shadow:0 0 0 46px rgba(56,189,248,.025),0 0 0 92px rgba(56,189,248,.018)}
+    .radar:after{content:"";position:absolute;left:50%;top:50%;width:48%;height:2px;background:linear-gradient(90deg,var(--accent),transparent);transform-origin:left center;animation:sweep 4.8s linear infinite;box-shadow:0 0 18px rgba(56,189,248,.45)}
+    @keyframes sweep{to{transform:rotate(360deg)}}
+    .node{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--accent2);box-shadow:0 0 18px rgba(250,204,21,.8)}
+    .node.n1{left:28%;top:34%}.node.n2{left:68%;top:46%;background:var(--accent3);box-shadow:0 0 18px rgba(20,241,149,.8)}.node.n3{left:52%;top:70%;background:var(--accent)}
+    .radar-label{position:absolute;left:18px;right:18px;bottom:16px;display:flex;justify-content:space-between;gap:12px;color:#dff7ff;font-family:var(--mono);font-size:.68rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+    .btn{
+      position:relative;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:9px;
+      min-height:44px;
+      padding:0 18px;
+      border-radius:999px;
+      color:#05101c;
+      font-size:.82rem;
+      font-weight:950;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      background:linear-gradient(135deg,var(--accent),#8be9ff 45%,#fff 115%);
+      box-shadow:0 16px 35px rgba(56,189,248,.25);
+      transition:.18s ease;
+      text-decoration:none;
+    }
+    .btn:hover:not(:disabled){transform:translateY(-1px);filter:saturate(1.08)}
+    .btn:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
+    .btn.secondary-btn,.secondary-btn{
+      background:rgba(255,255,255,.075);
+      color:#eaf6ff;
+      box-shadow:none;
+      border:1px solid var(--stroke);
+    }
+    .btn.secondary-btn:hover:not(:disabled),.secondary-btn:hover:not(:disabled){background:rgba(255,255,255,.12);transform:translateY(-1px)}
+    main button:not(.tool-btn):not(.candidate-pill){
+      appearance:none;
+      border-radius:999px;
+      min-height:44px;
+      padding:0 18px;
+      color:#05101c;
+      background:linear-gradient(135deg,var(--accent),#8be9ff 45%,#fff 115%);
+      font-weight:950;
+      font-size:.82rem;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      box-shadow:0 16px 35px rgba(56,189,248,.25);
+      transition:.18s ease;
+    }
+    main button:not(.tool-btn):not(.candidate-pill):hover:not(:disabled){transform:translateY(-1px);filter:saturate(1.08)}
+    main button:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
+    main .secondary-btn{background:rgba(255,255,255,.075)!important;color:#eaf6ff!important;border:1px solid var(--stroke)!important;box-shadow:none!important}
+    .workspace{display:grid;gap:24px;margin-top:26px}
+    .drop-zone{
+      position:relative;
+      display:grid;
+      place-items:center;
+      min-height:300px;
+      padding:36px;
+      border:1.5px dashed rgba(125,211,252,.36);
+      border-radius:var(--radius2);
+      background:linear-gradient(180deg,rgba(8,18,31,.84),rgba(8,18,31,.62));
+      box-shadow:0 20px 60px rgba(0,0,0,.26),inset 0 0 0 1px rgba(255,255,255,.035);
+      text-align:center;
+      transition:.16s ease;
+      cursor:pointer;
+      overflow:hidden;
+    }
+    .drop-zone:before{content:"";position:absolute;inset:12px;border-radius:26px;border:1px solid rgba(255,255,255,.055);pointer-events:none}
+    .drop-zone:after{content:"";position:absolute;inset:auto 10% -80px 10%;height:160px;background:radial-gradient(closest-side,rgba(56,189,248,.18),transparent);pointer-events:none}
+    .drop-zone.dragover{border-color:var(--accent);background:rgba(56,189,248,.10);transform:translateY(-1px)}
+    .drop-zone>div{position:relative;z-index:1}
+    .drop-icon{
+      width:82px;
+      height:82px;
+      display:grid;
+      place-items:center;
+      margin:0 auto 18px;
+      border-radius:24px;
+      background:linear-gradient(135deg,rgba(56,189,248,.18),rgba(20,241,149,.10));
+      color:var(--accent);
+      font-family:var(--mono);
+      font-size:2.15rem;
+      font-weight:1000;
+      border:1px solid rgba(125,211,252,.32);
+      box-shadow:inset 0 0 0 7px rgba(255,255,255,.025),0 18px 40px rgba(56,189,248,.10);
+    }
+    .drop-title{margin:0 0 8px;font-size:1.55rem;font-weight:1000;letter-spacing:-.03em;text-transform:uppercase}
+    .drop-text{margin:0 auto;color:var(--muted);max-width:720px;line-height:1.6}
+    .hidden-input{display:none}
+    .drop-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+    .toolbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:12px;
+      border:1px solid var(--stroke);
+      border-radius:22px;
+      background:rgba(8,18,31,.68);
+      padding:12px;
+      box-shadow:0 16px 42px rgba(0,0,0,.20);
+    }
+    .status-card{min-height:52px;display:flex;align-items:center;gap:12px;color:var(--muted);font-size:.95rem;padding:0 10px}
+    .spinner{display:none;width:22px;height:22px;border:3px solid rgba(56,189,248,.18);border-top-color:var(--accent);border-radius:999px;animation:spin .85s linear infinite}
+    .processing .spinner{display:block}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+    .metric{
+      position:relative;
+      overflow:hidden;
+      background:linear-gradient(180deg,rgba(8,18,31,.86),rgba(14,26,42,.66));
+      border:1px solid var(--stroke);
+      border-radius:20px;
+      padding:18px;
+      box-shadow:0 8px 28px rgba(0,0,0,.18);
+    }
+    .metric:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(var(--accent),var(--accent3))}
+    .metric:after{content:"";position:absolute;right:-30px;top:-40px;width:100px;height:100px;border-radius:50%;background:rgba(56,189,248,.09)}
+    .metric strong{display:block;font-family:var(--mono);font-size:1.8rem;letter-spacing:-.05em}
+    .metric span{color:var(--muted);font-size:.76rem;text-transform:uppercase;letter-spacing:.075em;font-weight:950}
+    .section-title{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin:10px 0 -8px;
+      font-size:.95rem;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      font-weight:1000;
+    }
+    .section-title:before{content:"";width:10px;height:10px;border-radius:50%;background:var(--accent2);box-shadow:0 0 18px rgba(250,204,21,.7)}
+    .preview-grid,.group-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(166px,1fr));gap:14px}
+    .photo-card{
+      background:linear-gradient(180deg,rgba(8,18,31,.92),rgba(14,26,42,.74));
+      border:1px solid var(--stroke);
+      border-radius:18px;
+      overflow:hidden;
+      box-shadow:0 12px 34px rgba(0,0,0,.20);
+    }
+    .thumb{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:#101827;border-bottom:1px solid rgba(255,255,255,.08)}
+    .photo-meta{padding:12px}
+    .photo-name{display:block;font-size:.84rem;font-weight:950;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+    .photo-location{margin-top:6px;color:var(--muted);font-size:.78rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+    .warning{margin-top:8px;padding:8px 9px;color:#ffd7df;background:var(--warnbg);border:1px solid var(--warnbd);border-radius:10px;font-size:.74rem;font-weight:850;line-height:1.35}
+    .groups{display:grid;gap:20px}
+    .group{
+      background:linear-gradient(180deg,rgba(8,18,31,.82),rgba(8,18,31,.60));
+      border:1px solid var(--stroke);
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow:0 16px 42px rgba(0,0,0,.22);
+    }
+    .group h3{display:flex;justify-content:space-between;gap:12px;margin:0 0 8px;font-size:1.02rem;text-transform:uppercase;letter-spacing:.035em}
+    .group h3 span{font-family:var(--mono);font-size:.76rem;color:var(--accent3)}
+    .group .group-sub{margin:0 0 14px;color:var(--muted);font-size:.9rem}
+    .empty{
+      display:grid;
+      place-items:center;
+      min-height:144px;
+      color:var(--muted);
+      background:rgba(8,18,31,.50);
+      border:1px dashed rgba(125,211,252,.26);
+      border-radius:var(--radius);
+      text-align:center;
+      padding:22px;
+    }
+    .annotate-btn{width:100%;margin-top:10px;padding:0 10px!important;min-height:38px!important;font-size:.74rem!important}
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.82);z-index:50;padding:18px;backdrop-filter:blur(8px)}
+    .modal.open{display:flex}
+    .modal-card{
+      width:min(1320px,100%);
+      max-height:96vh;
+      background:#07111c;
+      border-radius:24px;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      border:1px solid rgba(125,211,252,.28);
+      box-shadow:0 26px 90px rgba(0,0,0,.55);
+    }
+    .modal-head,.modal-foot{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px;border-bottom:1px solid var(--stroke);background:rgba(8,18,31,.92)}
+    .modal-foot{border-top:1px solid var(--stroke);border-bottom:0}
+    .modal-title{font-weight:1000;text-transform:uppercase;letter-spacing:.03em}
+    .modal-sub{color:var(--muted);font-size:.88rem}
+    .canvas-wrap{
+      overflow:auto;
+      background:#020407;
+      padding:14px;
+      display:grid;
+      place-items:center;
+      background-image:linear-gradient(rgba(56,189,248,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,.08) 1px,transparent 1px);
+      background-size:28px 28px;
+    }
+    .canvas-wrap canvas{max-width:100%;height:auto;background:#fff;box-shadow:0 12px 36px rgba(0,0,0,.45)}
+    .marker-tools{display:grid;grid-template-columns:minmax(620px,1fr) auto auto;align-items:start;gap:10px;width:100%}
+    .marker-palette{display:grid;grid-template-columns:repeat(3,minmax(188px,1fr));gap:8px;width:100%;max-width:930px}
+    .tool-btn{
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:8px;
+      width:100%;
+      min-height:58px;
+      padding:9px 10px;
+      background:rgba(255,255,255,.06);
+      color:#eaf6ff;
+      border:1px solid var(--stroke);
+      border-radius:12px;
+      box-shadow:none;
+      font-size:.76rem;
+      text-transform:none;
+      letter-spacing:0;
+      text-align:left;
+    }
+    .tool-btn.active{outline:3px solid rgba(56,189,248,.20);border-color:var(--accent);background:rgba(56,189,248,.11)}
+    .tool-symbol{display:inline-grid;place-items:center;min-width:42px;height:28px;border-radius:999px;font-family:var(--mono);font-weight:950;font-size:.72rem;border:2px solid currentColor;background:#fff}
+    .tool-text{display:grid;text-align:left;line-height:1.05}
+    .tool-text strong{font-size:.64rem;color:var(--muted);letter-spacing:.07em;text-transform:uppercase}
+    .tool-text span{font-weight:900}
+    .hint{color:var(--muted);font-size:.86rem}
+    .utility-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:22px}
+    .utility{border:1px solid var(--stroke);border-radius:18px;background:rgba(255,255,255,.05);padding:16px;color:#c7d4e5}
+    .utility strong{display:block;color:#fff;text-transform:uppercase;letter-spacing:.05em;font-size:.78rem;margin-bottom:6px}
+    .utility span{font-size:.9rem;line-height:1.5;color:var(--muted)}
+
+
+    .map-panel{border:1px solid var(--stroke);border-radius:var(--radius);background:linear-gradient(180deg,rgba(8,18,31,.90),rgba(8,18,31,.62));box-shadow:0 16px 42px rgba(0,0,0,.22);overflow:hidden}
+    .cluster-map{width:100%;height:430px;background:rgba(2,6,12,.72);position:relative}
+    .cluster-map .empty{height:100%;border:0;border-radius:0;background:transparent}
+    .leaflet-container{font-family:var(--font);background:#07111c;color:#0f172a}
+    .leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#06101c;color:#eaf6ff;border:1px solid rgba(125,211,252,.30);box-shadow:0 18px 50px rgba(0,0,0,.36)}
+    .leaflet-popup-content{font-size:.83rem;line-height:1.45}
+    .leaflet-control-attribution{font-size:.68rem!important}
+    .map-legend{display:flex;gap:9px;flex-wrap:wrap;align-items:center;padding:12px 16px;border-top:1px solid var(--stroke);color:var(--muted);font-size:.82rem;background:rgba(255,255,255,.035)}
+    .legend-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--accent3);box-shadow:0 0 14px rgba(20,241,149,.75)}
+    .legend-dot.photo{background:var(--accent2);box-shadow:0 0 14px rgba(250,204,21,.75)}
+    .address-candidates{display:grid;gap:6px;margin-top:4px;color:var(--muted);font-size:.76rem;line-height:1.38}
+    .candidate-pill{display:block;width:100%;border:1px solid rgba(255,255,255,.10);border-radius:10px;background:rgba(255,255,255,.045);padding:7px 8px;overflow-wrap:anywhere;color:var(--muted);font:inherit;text-align:left;box-shadow:none;text-transform:none;letter-spacing:0;min-height:auto;cursor:pointer}
+    .candidate-pill:hover,.candidate-pill:focus{border-color:rgba(56,189,248,.58);background:rgba(56,189,248,.10);color:#dff7ff;outline:none;transform:none;filter:none}
+    .candidate-pill.selected{border-color:rgba(20,241,149,.45);background:rgba(20,241,149,.08)}
+    .candidate-pill strong{color:#f8fafc}
+    .candidate-pill .candidate-action{display:block;margin-top:3px;color:#8be9ff;font-family:var(--mono);font-size:.64rem;text-transform:uppercase;letter-spacing:.05em;font-weight:900}
+    .lookup-badge{display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding:5px 8px;border-radius:999px;border:1px solid rgba(20,241,149,.30);background:rgba(20,241,149,.08);color:#c9ffea;font-family:var(--mono);font-size:.66rem;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+    .lookup-badge.warn{border-color:rgba(250,204,21,.36);background:rgba(250,204,21,.08);color:#fff0a8}
+
+    .address-review{border:1px solid var(--stroke);border-radius:var(--radius);background:linear-gradient(180deg,rgba(8,18,31,.90),rgba(8,18,31,.62));box-shadow:0 16px 42px rgba(0,0,0,.22);padding:18px;display:grid;gap:16px}
+    .address-review-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}
+    .address-review-title{margin:0;color:#eef8ff;font-size:1rem;text-transform:uppercase;letter-spacing:.065em;font-weight:950}
+    .address-review-note{margin:6px 0 0;color:var(--muted);font-size:.88rem;line-height:1.5;max-width:900px}
+    .override-grid{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:end}
+    .field-label{display:grid;gap:7px;color:#dcecff;font-size:.77rem;text-transform:uppercase;letter-spacing:.06em;font-weight:900}
+    .field-label span{color:var(--muted);font-size:.76rem;text-transform:none;letter-spacing:0;font-weight:650;line-height:1.4}
+    .address-review textarea,.address-review input{width:100%;border:1px solid rgba(125,211,252,.28);border-radius:12px;background:rgba(2,6,12,.60);color:#f8fafc;padding:11px 12px;outline:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.025)}
+    .address-review textarea:focus,.address-review input:focus{border-color:rgba(56,189,248,.68);box-shadow:0 0 0 3px rgba(56,189,248,.12)}
+    .address-review textarea{min-height:82px;resize:vertical;font-family:var(--mono);font-size:.82rem;line-height:1.45}
+    .override-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .address-list{display:grid;gap:12px}
+    .address-card{border:1px solid rgba(255,255,255,.10);border-radius:18px;background:rgba(255,255,255,.045);padding:14px;display:grid;gap:12px}
+    .address-card-top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap}
+    .address-card-title{margin:0;color:#f8fafc;font-size:.95rem;font-weight:950;overflow-wrap:anywhere}
+    .address-card-meta{color:var(--muted);font-size:.78rem;line-height:1.45}
+    .address-field-grid{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end}
+    .address-source-line{display:flex;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:.78rem;line-height:1.45}
+    .address-source-line strong{color:#edf7ff}
+    @media(max-width:900px){.override-grid,.address-field-grid{grid-template-columns:1fr}.override-actions{justify-content:flex-start}.marker-tools{grid-template-columns:1fr}.marker-palette{grid-template-columns:repeat(2,minmax(0,1fr));max-width:none}.cluster-map{height:360px}}
+    @media(max-width:980px){
+      .hero{grid-template-columns:1fr}
+      .mission-card{min-height:260px}
+      .summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .nav{display:none}
+    }
+    @media(max-width:640px){
+      .app{width:min(100% - 24px,1240px);padding-top:12px}
+      .topbar{border-radius:24px;align-items:flex-start;position:relative;top:auto}
+      .brand-mark{width:132px;height:42px}
+      .brand-text{display:none}
+      .hero{padding:22px;border-radius:24px}
+      .drop-zone{min-height:246px;padding:24px;border-radius:24px}
+      .toolbar{align-items:stretch}
+      .toolbar button{width:100%}
+      .summary{grid-template-columns:1fr}
+      .preview-grid,.group-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+      .modal-head,.modal-foot{align-items:flex-start;flex-direction:column}
+      .utility-grid{grid-template-columns:1fr}
+    }
+
+    .compact-app{padding-top:14px}
+    .workspace-first{margin-top:0}
+    .primary-upload{min-height:345px;margin-top:0}
+    .upload-shell{width:min(860px,100%)}
+    .drop-brand{display:grid;place-items:center;width:min(320px,72vw);height:auto;margin:0 auto 22px;padding:12px 22px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(56,189,248,.08),0 18px 50px rgba(0,0,0,.18)}
+    .drop-brand img{display:block;width:100%;height:auto}
+    .directory-tree{border:1px solid var(--stroke);border-radius:var(--radius);background:linear-gradient(180deg,rgba(8,18,31,.90),rgba(8,18,31,.62));box-shadow:0 16px 42px rgba(0,0,0,.22);overflow:hidden}
+    .tree-text{margin:0;padding:18px 20px;white-space:pre;overflow:auto;color:#d9f6ff;font-family:var(--mono);font-size:.86rem;line-height:1.55;max-height:460px}
+    .tree-note{padding:12px 18px;border-top:1px solid var(--stroke);color:var(--muted);font-size:.82rem;line-height:1.5;background:rgba(255,255,255,.035)}
+    .group-head{display:grid;gap:10px;margin-bottom:16px}
+    .group-title-row{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+    .group-name{min-width:0;overflow-wrap:anywhere}
+    .group-count{font-family:var(--mono);font-size:.76rem;color:var(--accent3);white-space:nowrap}
+    .group-detail{margin:0;color:var(--muted);font-size:.9rem;line-height:1.5}
+    .group-detail strong{color:#edf7ff}
+    .folder-path{display:inline-flex;max-width:100%;overflow:auto;padding:8px 10px;border:1px solid rgba(125,211,252,.26);border-radius:10px;background:rgba(56,189,248,.07);color:#c7f2ff;font-family:var(--mono);font-size:.78rem;white-space:nowrap}
+    .badge-row{display:flex;gap:8px;flex-wrap:wrap}
+    .mini-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:999px;border:1px solid rgba(125,211,252,.26);background:rgba(255,255,255,.055);color:#d8e8f8;font-family:var(--mono);font-size:.68rem;font-weight:850;text-transform:uppercase;letter-spacing:.04em}
+    .mini-badge.warn{border-color:rgba(250,204,21,.34);color:#fce894;background:rgba(250,204,21,.07)}
+    .photo-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+    .photo-tags .mini-badge{font-size:.62rem;padding:4px 7px}
+    @media(max-width:640px){.primary-upload{min-height:300px}.drop-brand{width:min(260px,76vw)}.tree-text{font-size:.76rem;padding:14px}.group-title-row{flex-direction:column}.folder-path{white-space:normal}.marker-palette{grid-template-columns:1fr}.cluster-map{height:320px}}
+
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+  <main class="app compact-app" id="app">
+    <section class="workspace workspace-first" id="upload">
+      <label id="dropZone" class="drop-zone primary-upload">
+        <input id="fileInput" class="hidden-input" type="file" accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple />
+        <input id="directoryInput" class="hidden-input" type="file" accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple webkitdirectory directory />
+        <div class="upload-shell">
+          <div class="drop-brand"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABMgAAAFGCAYAAACfTKMAAAAACXBIWXMAABYlAAAWJQFJUiTwAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAB1vSURBVHgB7d3xcRRH+jfwR7+6/81FwBCBcQReIjgcAXIEQAQWERgiQERgLgLWEViOwEMEry4Cvd2e3tOiEyCk0U5P9+dT1bUC4ypQrXqf/vbTPREAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANTnKAAAVuri4uJBejlO4/s0HpRRk/M0/kxje3R0tA0AAKpURUCWittNenmaxo9pDFFfcZvlAvcsjXepwD0NAGAxJRh7G1P9sBZjGi9THfE+AACoyqIBWSluf41p53dNxjSepAJ3DADgoFL9MKSXDzFtqq3Rcaoh3gUAANVYOiDLxe0m1il3lP0gJAOAw0r1w2l6eRbrlWuIR6mGOA8AAKrwf7GQVNwex3rDsWx3tAMAOJDSPbbmcCzLNcSLAACgGosFZMnzWL9NOSYKABzGcbThxwAAoBqLBGQlVHocbVjT5cAAsHat1A+t/DsAAJqwVAdZS0XhEADAoXwXbdCBDgBQkSWPWAIAAADA4gRkAAAAAHRNQAYAAABA1wRkAAAAAHRNQAYAAABA1wRkAAAAAHRNQAYAAABA1wRkAAAAAHRNQAYAAABA1wRkAAAAAHRNQAYAAABA1wRkAAAAAHRNQAYAAABA1wRkAAAAAHRNQAYAAABA1wRkAAAAAHRNQAYAAABA1wRkAAAAAHRNQAYAAABA1wRkAAAAAHRNQAYAAABA1wRkAAAAAHRNQAYAAABA1wRkAAAAAHRNQAYAAABA1wRkAAAAAHRNQAYAAABA1wRkAAAAAHRNQAYAAABA1wRkAAAAAHRNQAYAAABA1wRkAAAAAHRNQAYAAABA1wRkAAAAAHRNQAYAAABA1wRkAMCafAwAAJiZgAwAWJMx2nAWAABUQ0AGAKzJNtrwewAAUA0BGQCwGkdHR9toIyR7HQAAVENABgCszcs0zmO9XqWgbwwAAKohIAMAViWFS/n+riexzvvIcjh2EgAAVOUfAQCwMiUke3RxcXGcXv+VxuM0hqhP7nQbY7pz7LT8vQEAqIyADABYrRQ4naaX0wAAgDtwxBIAAACArgnIAAAAAOiagAwAAACArgnIAAAAAOiagAwAAACArgnIAAAAAOiagAwAAACArgnIAAAAAOiagAwAAACArgnIAAAAAOiagAwAAACArgnIAAAAAOiagAwAAACArgnIAAAAAOiagAwAAACArgnIAAAAAOiagAwAAACArgnIAAAAAOiagAwAAACArgnIAAAAAOiagAwAAACArv0juKunFxcXDwM+7+M1v3dextWvx/z10dHRecCKpXnxQXp5UH45XHmN8t8eXPO/mk/r9J+Y5qmzPNIcNUZF0vttk14ex/XvqRpU+X3jbm4wzw3X/G/5z38X1Gw3333JeM3Xu3pOHceqpLlsKF9efb369Y5ajW/x8QZ/JtdJ2xrmTgHZ3X1fBswmfVDll12hNZbXj3u//ntYbHFoZUE47I3864flddh7pWHpfXCS5p9XsbD093iaXn6Nlbzn0t/3NL28MnfXbW+e24Wu+evv4nLeizDP8QWljhtjLzSLqY4b937/TJDGfSrB1/48drVe+9xmJSyihvryKBZQdno/BDCHnLjnAuvPmIquXaeCootbK0XVJqbCKW8C5AJrCIUUl16neeZlLCS9R39JLyexPmMaT4Rky7oSguXxXZjnWEau28aY6rhdTaeO40bKXLabx4aYQrDd17BGi4ZkAjJo1xhToZULrm0otviMvTAsF1Q/hgUiN5eDnm0cWHrP5vfqH7FeuQP4UXAw5T2zicvA/3FA3XbB2e9h85P4bxi2KUMQRsv+udR8JyCDvpyV8e9wH0639u5rymFY/loYxm29SfPIiziw9B7ONcQm1u3n9L07De5Fmed2c1zN99PBt8g1XA7MtlHJfT3cnxKIPY1pDvtXCMPox8s0v72OBQjIoG+7Quv9El0gHMZegfVjebVQZC7/TnPH0zig8n7+f7F+B//etay8L45jWkQKxOjFNqZNzxyWnQWrdyXc3wT06TTNaT/HAlzSD33bHTN5nj6Qx5gKrXfCsvXbC8WehcUi92eJp/G1cjTOA37u6Eootgnoz6aMKHVcDstOhWXrsheK5Y5s9Ros2C0pIAN2hpgWGselyHoTU2fZGKxGKbJ2wZgiixYN0YYhuJUyz+WHNGwC2BnSeB7TpmcOyHId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" alt="BRINC" /></div>
+          <div class="drop-icon">GPS</div>
+          <p class="drop-title">Upload station photos</p>
+          <p class="drop-text">Drop photos or a full folder. Tagged photos are clustered within 200 meters, with close capture times used to keep GPS outliers in the correct station folder. Non-GPS photos are pulled into the same station folder when their capture time falls between that folder's GPS-tagged photos, including the interior/building photo used as the address anchor.</p>
+          <div class="drop-actions">
+            <button id="selectFilesBtn" class="secondary-btn" type="button">Select Photos</button>
+            <button id="selectFolderBtn" class="secondary-btn" type="button">Select Folder</button>
+          </div>
+        </div>
+      </label>
+
+      <div class="toolbar">
+        <div id="statusCard" class="status-card"><div class="spinner"></div><span id="statusText">No photos loaded.</span></div>
+        <div class="drop-actions">
+          <button id="downloadBtn" disabled>Download ZIP</button>
+          <button id="downloadDocBtn" disabled>Download Word Document</button>
+        </div>
+      </div>
+
+      <section class="summary" id="metrics" aria-label="Processing metrics">
+        <div class="metric"><strong id="totalCount">0</strong><span>Total photos</span></div>
+        <div class="metric"><strong id="gpsCount">0</strong><span>With GPS</span></div>
+        <div class="metric"><strong id="missingGpsCount">0</strong><span>Missing GPS</span></div>
+        <div class="metric"><strong id="annotatedCount">0</strong><span>Annotated</span></div>
+        <div class="metric"><strong id="groupCount">0</strong><span>Folders</span></div>
+      </section>
+
+      <h2 class="section-title" id="map">Cluster Map</h2>
+      <section id="clusterMapSection" class="map-panel">
+        <div id="clusterMap" class="cluster-map"><div class="empty">Map will appear after GPS-tagged photos are processed.</div></div>
+        <div id="mapLegend" class="map-legend"><span><span class="legend-dot"></span> Address cluster</span><span><span class="legend-dot photo"></span> GPS photo</span><span>Circles show the 200-meter clustering radius.</span></div>
+      </section>
+
+      <h2 class="section-title" id="directory">Directory Structure</h2>
+      <section id="directoryTree" class="directory-tree"><div class="empty">Folder structure will appear after processing.</div></section>
+
+
+
+      <h2 class="section-title" id="address-review-heading">Address Review</h2>
+      <section id="addressReview" class="address-review">
+        <div class="address-review-head">
+          <div>
+            <h3 class="address-review-title">Verify folder address before export</h3>
+            <p class="address-review-note">The app now runs a full lookup against multiple geocoders and nearby mapped public-building/address/POI records, prioritizes a street-number address, and names each export folder as Building Name, Street Address, City before ZIP or Word export.</p>
+          </div>
+          <div class="mini-badge warn">Manual edits override lookup</div>
+        </div>
+        <div class="override-grid">
+          <label class="field-label" for="overrideRulesInput">Photo/address override rules
+            <span>One rule per line: photo name, folder text, or partial path = common name | exact street address. Manual overrides rebuild the folder as Building Name, Street Address, City.</span>
+            <textarea id="overrideRulesInput" spellcheck="false"># Example: IMG_0773.JPEG = Iberville Parish Animal Control | 59815 Bayou Rd, Plaquemine, LA 70764</textarea>
+          </label>
+          <div class="override-actions">
+            <button id="applyOverridesBtn" class="secondary-btn" type="button">Apply Overrides</button>
+            <button id="rebuildLookupBtn" class="secondary-btn" type="button">Re-run Lookup</button>
+          </div>
+        </div>
+        <div id="addressReviewList" class="address-list"><div class="empty">Address rows will appear after processing.</div></div>
+      </section>
+
+      <h2 class="section-title" id="preview">Photo Preview</h2>
+      <section id="previewGrid" class="preview-grid"><div class="empty">Imported photos will appear here.</div></section>
+
+      <h2 class="section-title" id="groups">Grouped Results</h2>
+      <section id="groupsContainer" class="groups"><div class="empty">Location groups will appear after processing.</div></section>
+    </section>
+  </main>
+
+  <div id="annotationModal" class="modal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <div id="modalTitle" class="modal-title">Annotate Photo</div>
+          <div id="modalSubTitle" class="modal-sub"></div>
+        </div>
+        <div class="marker-tools">
+          <div id="markerPalette" class="marker-palette"></div>
+          <button id="undoMarkerBtn" class="secondary-btn" type="button">Undo</button>
+          <button id="closeModalBtn" class="secondary-btn" type="button">Close</button>
+        </div>
+      </div>
+      <div class="canvas-wrap"><canvas id="annotationCanvas"></canvas></div>
+      <div class="modal-foot">
+        <div class="hint">Select a marker type, then click anywhere on the photo. Callout bubbles line up across the top and continue on the next row when full.</div>
+        <button id="saveAnnotationBtn" type="button">Done</button>
+      </div>
+    </div>
+  </div>
+<script>
+
+(function(){
+  const CLUSTER_RADIUS_METERS = 200;
+  const GPS_CLUSTER_TIME_BRIDGE_MINUTES = 20;
+  const GPS_CLUSTER_TIME_OUTLIER_MAX_METERS = 420;
+  const MISSING_GPS_TIME_BUCKET_MINUTES = 30;
+  const NO_GPS_ENDPOINT_PADDING_MINUTES = 15;
+  const NO_GPS_NEAREST_CLUSTER_WINDOW_MINUTES = 45;
+  const NOMINATIM_DELAY_MS = 1100;
+  const KNOWN_PUBLIC_BUILDINGS = [
+    {
+      placeName:"Iberville Parish Animal Control",
+      addressLine:"59815 Bayou Rd, Plaquemine, LA 70764",
+      city:"Plaquemine",
+      county:"Iberville Parish",
+      state:"LA",
+      postcode:"70764",
+      lat:30.2696806,
+      lon:-91.260025,
+      radiusMeters:260
+    }
+  ];
+  const $ = id => document.getElementById(id);
+  const dropZone = $("dropZone"), fileInput = $("fileInput"), directoryInput = $("directoryInput"), selectFilesBtn = $("selectFilesBtn"), selectFolderBtn = $("selectFolderBtn"), statusCard = $("statusCard"), statusText = $("statusText"), previewGrid = $("previewGrid"), directoryTree = $("directoryTree"), clusterMapEl = $("clusterMap"), mapLegend = $("mapLegend"), addressReviewList = $("addressReviewList"), overrideRulesInput = $("overrideRulesInput"), applyOverridesBtn = $("applyOverridesBtn"), rebuildLookupBtn = $("rebuildLookupBtn"), groupsContainer = $("groupsContainer"), downloadBtn = $("downloadBtn"), downloadDocBtn = $("downloadDocBtn");
+  const totalCount = $("totalCount"), gpsCount = $("gpsCount"), missingGpsCount = $("missingGpsCount"), annotatedCount = $("annotatedCount"), groupCount = $("groupCount");
+  const annotationModal = $("annotationModal"), modalTitle = $("modalTitle"), modalSubTitle = $("modalSubTitle"), canvas = $("annotationCanvas"), ctx = canvas.getContext("2d"), markerPalette = $("markerPalette"), undoMarkerBtn = $("undoMarkerBtn"), closeModalBtn = $("closeModalBtn"), saveAnnotationBtn = $("saveAnnotationBtn");
+  let photos = [], groups = new Map(), seenFiles = new Set(), locationCache = new Map(), activePhoto = null, activeImage = null, clusterMap = null, clusterMapLayer = null;
+  const MARKER_OPTIONS = [
+    { id:"electric_station_120_20", symbol:"P20", category:"POWER", icon:"power", label:"120 VAC / 20A Station", color:"#b91c1c", textColor:"#fff", strokeColor:"#7f1d1d" },
+    { id:"electric_rf_120_15", symbol:"P15", category:"POWER", icon:"power", label:"120 VAC / 15A RF", color:"#b91c1c", textColor:"#fff", strokeColor:"#7f1d1d" },
+    { id:"electric_guardian_208_30", symbol:"P30", category:"POWER", icon:"power", label:"208 VAC / 30A Guardian", color:"#b91c1c", textColor:"#fff", strokeColor:"#7f1d1d" },
+    { id:"ethernet_rj45_50", symbol:"RJ50", category:"DATA", icon:"ethernet", label:"RJ45 / 50 Mbps", color:"#b7791f", textColor:"#111827", strokeColor:"#7c4a03" },
+    { id:"ethernet_rj45_25", symbol:"RJ25", category:"DATA", icon:"ethernet", label:"RJ45 / 25 Mbps", color:"#b7791f", textColor:"#111827", strokeColor:"#7c4a03" },
+    { id:"mount_unistrut", symbol:"UNI", category:"MOUNT", icon:"mount", label:"Unistrut", color:"#475569", textColor:"#fff", strokeColor:"#1f2937" },
+    { id:"rf_tower", symbol:"RF-T", category:"RF", icon:"rf", label:"Tower antenna path", color:"#1d4ed8", textColor:"#fff", strokeColor:"#1e3a8a" },
+    { id:"rf_non_pen", symbol:"RF-N", category:"RF", icon:"rf", label:"Non-penetrating mount", color:"#1d4ed8", textColor:"#fff", strokeColor:"#1e3a8a" },
+    { id:"rf_pen", symbol:"RF-P", category:"RF", icon:"rf", label:"Penetrating mount", color:"#1d4ed8", textColor:"#fff", strokeColor:"#1e3a8a" }
+  ];
+  const MARKUP_FONT = '"Aptos","IBM Plex Sans","Segoe UI",Arial,sans-serif';
+  let activeMarkerType = MARKER_OPTIONS[0].id;
+
+  selectFilesBtn.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); fileInput.click(); });
+  selectFolderBtn.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); directoryInput.click(); });
+  fileInput.addEventListener("change", e => { handleFiles(Array.from(e.target.files || [])); fileInput.value = ""; });
+  directoryInput.addEventListener("change", e => { handleFiles(Array.from(e.target.files || [])); directoryInput.value = ""; });
+  dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("dragover"); });
+  dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+  dropZone.addEventListener("drop", async e => { e.preventDefault(); dropZone.classList.remove("dragover"); handleFiles(await getFilesFromDrop(e.dataTransfer)); });
+  downloadBtn.addEventListener("click", downloadZip);
+  downloadDocBtn.addEventListener("click", downloadWordDocument);
+  if(applyOverridesBtn) applyOverridesBtn.addEventListener("click", applyOverridesAndRefresh);
+  if(rebuildLookupBtn) rebuildLookupBtn.addEventListener("click", async () => {
+    if(!photos.length){ setStatus("Load photos before rebuilding address folders.", false); return; }
+    setStatus("Re-running full address and common-name lookup, then rebuilding folders...", true);
+    locationCache = new Map();
+    await rebuildGroupsFromPhotos();
+    render();
+    setStatus("Address folders rebuilt. Review/edit full street addresses and common names before ZIP or Word export.", false);
+  });
+  closeModalBtn.addEventListener("click", closeAnnotationModal);
+  saveAnnotationBtn.addEventListener("click", () => { closeAnnotationModal(); render(); });
+  undoMarkerBtn.addEventListener("click", () => { if(activePhoto){ activePhoto.markers.pop(); drawAnnotationCanvas(); render(); } });
+  annotationModal.addEventListener("click", e => { if(e.target === annotationModal) closeAnnotationModal(); });
+  document.addEventListener("keydown", e => { if(e.key === "Escape") closeAnnotationModal(); });
+  canvas.addEventListener("pointerdown", addMarkerFromCanvasEvent);
+  canvas.addEventListener("click", e => { if(!window.PointerEvent) addMarkerFromCanvasEvent(e); });
+  renderMarkerPalette(); render();
+
+  function addMarkerFromCanvasEvent(e){
+    if(!activePhoto || !activeImage) return;
+    if(e && e.preventDefault) e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    if(!rect.width || !rect.height) return;
+    const clientX = Number.isFinite(e.clientX) ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : rect.left + rect.width / 2);
+    const clientY = Number.isFinite(e.clientY) ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : rect.top + rect.height / 2);
+    const x = (clientX - rect.left) / rect.width;
+    const y = (clientY - rect.top) / rect.height;
+    const markerType = activeMarkerType || (MARKER_OPTIONS[0] && MARKER_OPTIONS[0].id) || "marker";
+    activePhoto.markers.push({ type: markerType, x: clamp(x,.02,.98), y: clamp(y,.02,.98) });
+    try{
+      drawAnnotationCanvas();
+      renderMetrics();
+      renderPreviews();
+      renderGroups();
+      updateButtons();
+    }catch(err){
+      console.error("Annotation draw failed", err);
+      setStatus(`Annotation draw failed: ${err && err.message ? err.message : "unknown error"}`, false);
+    }
+  }
+
+  async function handleFiles(files){
+    try{
+      const imageFiles = files.filter(isSupportedImage);
+      if(!imageFiles.length){ setStatus("No supported image files found.", false); return; }
+      setStatus(`Preparing ${imageFiles.length} image${imageFiles.length===1?"":"s"}...`, true);
+      let imported = 0, skipped = 0;
+      for(let i=0;i<imageFiles.length;i++){
+        const file = imageFiles[i];
+        let duplicateKey = `${file.name}-${file.size}-${file.lastModified}`;
+        try{ duplicateKey = await getFileKey(file); }catch{}
+        if(seenFiles.has(duplicateKey)){ skipped++; continue; }
+        seenFiles.add(duplicateKey);
+        setStatus(`Reading metadata ${i+1} of ${imageFiles.length}: ${file.name}`, true);
+        let photo;
+        try{ photo = await processPhoto(file); }
+        catch(err){ console.error("Image processing failed", file.name, err); photo = makeFallbackPhoto(file, `Could not process image. ${err && err.message ? err.message : ""}`.trim()); }
+        photos.push(photo); imported++;
+        renderMetrics(); renderPreviews();
+        await idlePause();
+      }
+      setStatus("Building address folders from GPS clusters and capture times...", true);
+      await rebuildGroupsFromPhotos();
+      const suffix = skipped ? ` ${skipped} duplicate${skipped===1?"":"s"} skipped.` : "";
+      setStatus(`Processed ${photos.length} photo${photos.length===1?"":"s"} into ${groups.size} folder${groups.size===1?"":"s"}.${suffix}`, false);
+      render();
+    }catch(err){ console.error(err); setStatus(`Processing stopped: ${err && err.message ? err.message : "Unknown error"}`, false); updateButtons(); }
+  }
+
+  function isSupportedImage(file){ return (file.type && file.type.startsWith("image/")) || /\.(jpe?g|png|webp|heic|heif)$/i.test(file.name || ""); }
+
+  function isHeicFile(file){
+    const name = (file && file.name ? file.name : "").toLowerCase();
+    const type = (file && file.type ? file.type : "").toLowerCase();
+    return type === "image/heic" || type === "image/heif" || name.endsWith(".heic") || name.endsWith(".heif");
+  }
+
+  function isJpegFile(file){
+    const name = (file && file.name ? file.name : "").toLowerCase();
+    const type = (file && file.type ? file.type : "").toLowerCase();
+    return type === "image/jpeg" || name.endsWith(".jpg") || name.endsWith(".jpeg");
+  }
+
+  async function processPhoto(file){
+    const heic = isHeicFile(file);
+    const exif = await readExifSafe(file);
+    let previewSource = file, exportFile = file, exportFileName = file.name, conversionWarning = "";
+    try{
+      exportFile = await convertImageToJpeg(file);
+      exportFileName = replaceFileExtension(file.name,".jpg");
+      previewSource = exportFile;
+      conversionWarning = heic ? "HEIC converted to JPG in-browser for preview/export." : "";
+    }catch(err){
+      console.warn("JPG conversion failed", file.name, err);
+      exportFile = file;
+      exportFileName = file.name;
+      if(heic){
+        previewSource = await canBrowserPreviewFile(file) ? file : await makeHeicPlaceholder(file);
+        conversionWarning = "HEIC to JPG conversion failed. Original HEIC retained as fallback.";
+      }else{
+        previewSource = file;
+        conversionWarning = "JPG conversion failed. Original file retained as fallback.";
+      }
+    }
+    const previewUrl = URL.createObjectURL(previewSource);
+    const relativePath = file.webkitRelativePath || file.name;
+    const nameCapturedAt = parseDateTimeFromFileName(`${relativePath} ${file.name}`);
+    const capturedAt = exif.capturedAt || nameCapturedAt || (file.lastModified ? new Date(file.lastModified) : new Date());
+    const noGpsWarning = exif.gps ? "" : `No GPS data found. This photo/screenshot will be time-matched into an address folder when its capture, filename, or file time falls inside or near a tagged-photo time range.`;
+    return { id: makeId(), file, exportFile, fileName:file.name, exportFileName, relativePath, lat:exif.gps ? exif.gps.lat : null, lon:exif.gps ? exif.gps.lon : null, capturedAt, groupName:"Pending", address:"", placeName:"", city:"", county:"", state:"", addressConfidence:"", addressSource:"", matchedTimeReason:"", associationMethod:exif.gps ? "gps-tagged" : "pending-time-match", isInteriorCandidate:looksLikeInteriorPhoto(file.name, relativePath), isAddressAnchor:false, warning:[conversionWarning,noGpsWarning].filter(Boolean).join(" "), previewUrl, markers:[] };
+  }
+
+  function makeFallbackPhoto(file, warning){
+    const relativePath = file.webkitRelativePath || file.name;
+    return { id:makeId(), file, exportFile:file, fileName:file.name, exportFileName:file.name, relativePath, previewUrl:URL.createObjectURL(file), lat:null, lon:null, capturedAt:parseDateTimeFromFileName(relativePath || file.name) || (file.lastModified ? new Date(file.lastModified) : new Date()), groupName:"Pending", address:"", placeName:"", city:"", county:"", state:"", addressConfidence:"", addressSource:"", matchedTimeReason:"", associationMethod:"pending-time-match", isInteriorCandidate:looksLikeInteriorPhoto(file.name, relativePath), isAddressAnchor:false, warning:warning || "Could not process image metadata.", markers:[] };
+  }
+
+  async function readExifSafe(file){
+    const fallback = { gps:null, capturedAt:null };
+    let capturedAt = null;
+
+    if(window.exifr){
+      try{
+        const parsed = await window.exifr.parse(file, {
+          gps:true,
+          tiff:true,
+          exif:true,
+          ifd0:true,
+          pick:["latitude","longitude","GPSLatitude","GPSLongitude","GPSLatitudeRef","GPSLongitudeRef","DateTimeOriginal","CreateDate","ModifyDate","DateTime"]
+        });
+        if(parsed){
+          const lat = parseCoordinateValue(parsed.latitude ?? parsed.GPSLatitude, parsed.GPSLatitudeRef);
+          const lon = parseCoordinateValue(parsed.longitude ?? parsed.GPSLongitude, parsed.GPSLongitudeRef);
+          const dt = parsed.DateTimeOriginal || parsed.CreateDate || parsed.ModifyDate || parsed.DateTime;
+          capturedAt = dt instanceof Date ? dt : (typeof dt === "string" ? parseExifDate(dt) : capturedAt);
+          if(Number.isFinite(lat) && Number.isFinite(lon)) return { gps:{lat, lon}, capturedAt };
+        }
+      }catch(err){ console.warn("exifr metadata read failed", err); }
+    }
+
+    if(window.ExifReader){
+      try{
+        const tags = await window.ExifReader.load(file, { expanded:false, computed:true });
+        const readerDate = readExifReaderDate(tags);
+        if(readerDate) capturedAt = readerDate;
+        const gps = readExifReaderGps(tags);
+        if(gps) return { gps, capturedAt };
+      }catch(err){ console.warn("ExifReader metadata read failed", err); }
+    }
+
+    if(!window.EXIF || isHeicFile(file)) return { gps:null, capturedAt };
+
+    return new Promise(resolve => {
+      try{
+        EXIF.getData(file, function(){
+          try{
+            const lat = EXIF.getTag(this,"GPSLatitude"), lon = EXIF.getTag(this,"GPSLongitude"), latRef = EXIF.getTag(this,"GPSLatitudeRef") || "N", lonRef = EXIF.getTag(this,"GPSLongitudeRef") || "E";
+            const dt = EXIF.getTag(this,"DateTimeOriginal") || EXIF.getTag(this,"DateTimeDigitized") || EXIF.getTag(this,"DateTime");
+            const gps = lat && lon ? { lat:convertDmsToDecimal(lat,latRef), lon:convertDmsToDecimal(lon,lonRef) } : null;
+            resolve({ gps, capturedAt:parseExifDate(dt) || capturedAt });
+          }catch{ resolve({ gps:null, capturedAt }); }
+        });
+      }catch{ resolve({ gps:null, capturedAt }); }
+    });
+  }
+
+  async function rebuildGroupsFromPhotos(){
+    groups = new Map();
+    photos.forEach(resetPhotoGrouping);
+    const gpsPhotos = photos.filter(hasGps).sort(comparePhotoTime);
+    const overrideRules = getAddressOverrideRules();
+    const gpsGroups = clusterGpsPhotos(gpsPhotos);
+    const groupById = new Map(gpsGroups.map(g => [g.id, g]));
+
+    for(const p of photos.filter(p=>!hasGps(p)).sort(comparePhotoTime)){
+      const match = findTimeMatchedGroupForNoGps(p, gpsGroups, gpsPhotos, groupById);
+      if(match){
+        p.associationMethod = "time-matched-no-gps";
+        p.matchedTimeReason = match.reason;
+        match.group.photos.push(p);
+        updateGroupGeometryAndTimes(match.group);
+      }else{
+        placeMissingGpsPhoto(p);
+      }
+    }
+
+    const usedNames = new Set(Array.from(groups.values()).map(g=>g.name));
+    for(let i=0;i<gpsGroups.length;i++){
+      const g = gpsGroups[i];
+      const anchor = selectAddressAnchor(g);
+      const coord = chooseAddressCoordinate(g, anchor);
+      if(anchor) anchor.isAddressAnchor = true;
+      g.addressAnchorPhotoId = anchor ? anchor.id : "";
+      g.addressAnchorName = anchor ? anchor.fileName : "";
+      g.addressSource = coord.source;
+      g.addressCoordinatePhotoName = coord.sourcePhoto ? coord.sourcePhoto.fileName : "";
+      setStatus(`Resolving address ${i+1} of ${gpsGroups.length}: ${g.addressAnchorName || "GPS cluster"}`, true);
+      let location;
+      const manualLocation = findManualAddressOverrideForGroup(g, anchor, overrideRules);
+      if(manualLocation){
+        location = manualLocation;
+      }else{
+        try{ location = await resolveBestAddress(coord.lat, coord.lon); }
+        catch(err){ console.warn("Address lookup failed", err); location = makeFallbackLocation(coord.lat, coord.lon); }
+      }
+      applyLocationToGroup(g, location, usedNames);
+      groups.set(g.id, g);
+      await idlePause();
+    }
+
+    for(const g of groups.values()){
+      updateGroupGeometryAndTimes(g);
+      applyGroupFieldsToPhotos(g);
+    }
+  }
+
+  function resetPhotoGrouping(p){
+    delete p._clusterId;
+    p.groupName = "Pending";
+    p.address = "";
+    p.placeName = "";
+    p.city = "";
+    p.county = "";
+    p.state = "";
+    p.addressConfidence = "";
+    p.addressSource = "";
+    p.matchedTimeReason = "";
+    p.isAddressAnchor = false;
+    p.associationMethod = hasGps(p) ? "gps-tagged" : "pending-time-match";
+  }
+
+  function clusterGpsPhotos(gpsPhotos){
+    const built = [];
+    for(const p of gpsPhotos){
+      let best = null, bestMatch = null, bestScore = Infinity;
+      for(const g of built){
+        const match = getGpsClusterMatch(p, g);
+        if(match.match && match.score < bestScore){ best = g; bestMatch = match; bestScore = match.score; }
+      }
+      if(!best){ best = createGpsGroup(p); built.push(best); }
+      else{ addPhotoToGpsGroup(best, p, bestMatch && bestMatch.reason); }
+    }
+    built.forEach(g=>{ g.photos.sort(comparePhotoTime); updateGroupGeometryAndTimes(g); });
+    return built;
+  }
+
+  function createGpsGroup(photo){
+    const g = { id:`gps-${makeId()}`, type:"gps", name:"Resolving_Address", address:"Resolving address", placeName:"", city:"", county:"", state:"", postcode:"", displayName:"", addressDistanceMeters:null, addressConfidence:"", addressSource:"", hasStreetNumber:false, addressCandidates:[], addressAnchorPhotoId:"", addressAnchorName:"", addressCoordinatePhotoName:"", centroidLat:null, centroidLon:null, gpsStartMs:null, gpsEndMs:null, startMs:null, endMs:null, photos:[] };
+    addPhotoToGpsGroup(g, photo, "Started this GPS/time station cluster.");
+    return g;
+  }
+
+  function addPhotoToGpsGroup(group, photo, reason){
+    photo._clusterId = group.id;
+    photo.associationMethod = "gps-tagged";
+    photo.matchedTimeReason = reason || `GPS tagged photo within ${CLUSTER_RADIUS_METERS} meters of this station cluster.`;
+    group.photos.push(photo);
+    updateGroupGeometryAndTimes(group);
+  }
+
+  function getGpsClusterMatch(photo, group){
+    const distance = nearestDistanceToGroup(photo, group);
+    const timeGapMs = timeDistanceToGroup(photo, group);
+    const timeMinutes = Number.isFinite(timeGapMs) ? Math.round(timeGapMs / 60000) : Infinity;
+    if(distance <= CLUSTER_RADIUS_METERS){
+      return { match:true, score:distance + Math.min(timeMinutes, 60) * 2, reason:`GPS tagged photo within ${Math.round(distance)} meters of this station cluster.` };
+    }
+    if(distance <= GPS_CLUSTER_TIME_OUTLIER_MAX_METERS && timeGapMs <= GPS_CLUSTER_TIME_BRIDGE_MINUTES * 60 * 1000){
+      return { match:true, score:CLUSTER_RADIUS_METERS + distance * .35 + timeMinutes * 4, reason:`GPS outlier kept with this station by capture time (${Math.round(distance)}m away; ${Math.max(1,timeMinutes)} minute${timeMinutes===1?"":"s"} from the cluster time range).` };
+    }
+    return { match:false, score:Infinity, reason:"" };
+  }
+
+  function nearestDistanceToGroup(photo, group){
+    const tagged = group.photos.filter(hasGps);
+    if(!tagged.length || !hasGps(photo)) return Infinity;
+    return Math.min(...tagged.map(p=>distanceInMeters(photo.lat, photo.lon, p.lat, p.lon)));
+  }
+
+  function timeDistanceToGroup(photo, group){
+    const t = capturedMs(photo);
+    if(!Number.isFinite(group.gpsStartMs) || !Number.isFinite(group.gpsEndMs)) return Infinity;
+    return distanceToTimeRange(t, group.gpsStartMs, group.gpsEndMs);
+  }
+
+  function updateGroupGeometryAndTimes(group){
+    const tagged = group.photos.filter(hasGps);
+    if(tagged.length){
+      group.centroidLat = tagged.reduce((s,p)=>s+p.lat,0)/tagged.length;
+      group.centroidLon = tagged.reduce((s,p)=>s+p.lon,0)/tagged.length;
+      group.gpsStartMs = Math.min(...tagged.map(capturedMs));
+      group.gpsEndMs = Math.max(...tagged.map(capturedMs));
+    }
+    if(group.photos.length){
+      group.startMs = Math.min(...group.photos.map(capturedMs));
+      group.endMs = Math.max(...group.photos.map(capturedMs));
+    }
+  }
+
+  function findTimeMatchedGroupForNoGps(photo, gpsGroups, gpsPhotos, groupById){
+    if(!gpsGroups.length) return null;
+    const t = capturedMs(photo);
+    const bracket = findGpsBracket(t, gpsPhotos);
+    if(bracket.before && bracket.after && bracket.before._clusterId && bracket.before._clusterId === bracket.after._clusterId){
+      const group = groupById.get(bracket.before._clusterId);
+      if(group) return { group, reason:`Time-matched between tagged photos ${bracket.before.fileName} and ${bracket.after.fileName}.` };
+    }
+
+    const padMs = NO_GPS_ENDPOINT_PADDING_MINUTES * 60 * 1000;
+    const direct = getTimeMatchedClusterCandidates(t, gpsGroups, padMs);
+    if(direct.length){
+      const best = direct[0];
+      const inside = t >= best.group.gpsStartMs && t <= best.group.gpsEndMs;
+      return { group:best.group, reason: inside ? "Time-matched inside this station's GPS-tagged photo range." : `Time-matched within ${NO_GPS_ENDPOINT_PADDING_MINUTES} minutes of this station's tagged-photo range.` };
+    }
+
+    const nearestWindowMs = NO_GPS_NEAREST_CLUSTER_WINDOW_MINUTES * 60 * 1000;
+    const nearest = getTimeMatchedClusterCandidates(t, gpsGroups, nearestWindowMs);
+    if(nearest.length){
+      const best = nearest[0];
+      const minutes = Math.max(1, Math.round(best.score / 60000));
+      return { group:best.group, reason:`No-GPS photo/screenshot assigned to the nearest GPS cluster by time (${minutes} minute${minutes===1?"":"s"} from that cluster's tagged-photo range; ${NO_GPS_NEAREST_CLUSTER_WINDOW_MINUTES}-minute window).` };
+    }
+    return null;
+  }
+
+  function getTimeMatchedClusterCandidates(t, gpsGroups, windowMs){
+    return gpsGroups
+      .filter(g => Number.isFinite(g.gpsStartMs) && Number.isFinite(g.gpsEndMs))
+      .map(g => ({ group:g, score:distanceToTimeRange(t, g.gpsStartMs, g.gpsEndMs), mid:Math.abs(t - ((g.gpsStartMs + g.gpsEndMs)/2)) }))
+      .filter(c => c.score <= windowMs)
+      .sort((a,b)=>a.score-b.score || a.mid-b.mid || String(a.group.name || "").localeCompare(String(b.group.name || "")));
+  }
+
+  function findGpsBracket(t, gpsPhotos){
+    let before = null, after = null;
+    for(const p of gpsPhotos){
+      const pt = capturedMs(p);
+      if(pt <= t) before = p;
+      if(pt >= t){ after = p; break; }
+    }
+    return { before, after };
+  }
+
+  function distanceToTimeRange(t, start, end){ return t < start ? start - t : (t > end ? t - end : 0); }
+
+  function selectAddressAnchor(group){
+    const interior = group.photos.filter(p=>p.isInteriorCandidate).sort(comparePhotoTime);
+    if(interior.length) return pickClosestToGroupTimeMiddle(interior, group);
+    const tagged = group.photos.filter(hasGps).sort(comparePhotoTime);
+    if(tagged.length) return pickClosestToGroupTimeMiddle(tagged, group);
+    return group.photos[0] || null;
+  }
+
+  function pickClosestToGroupTimeMiddle(list, group){
+    const start = Number.isFinite(group.gpsStartMs) ? group.gpsStartMs : group.startMs;
+    const end = Number.isFinite(group.gpsEndMs) ? group.gpsEndMs : group.endMs;
+    const mid = Number.isFinite(start) && Number.isFinite(end) ? (start + end) / 2 : capturedMs(list[0]);
+    return list.slice().sort((a,b)=>Math.abs(capturedMs(a)-mid)-Math.abs(capturedMs(b)-mid))[0];
+  }
+
+  function chooseAddressCoordinate(group, anchor){
+    if(anchor && hasGps(anchor)) return { lat:anchor.lat, lon:anchor.lon, source:anchor.isInteriorCandidate ? "Interior photo GPS" : "Address anchor GPS", sourcePhoto:anchor };
+    const tagged = group.photos.filter(hasGps).sort(comparePhotoTime);
+    if(anchor && tagged.length){
+      const nearest = tagged.slice().sort((a,b)=>Math.abs(capturedMs(a)-capturedMs(anchor))-Math.abs(capturedMs(b)-capturedMs(anchor)))[0];
+      return { lat:nearest.lat, lon:nearest.lon, source:"Nearest tagged photo to interior anchor", sourcePhoto:nearest };
+    }
+    return { lat:group.centroidLat, lon:group.centroidLon, source:"GPS cluster centroid", sourcePhoto:tagged[0] || null };
+  }
+
+  function applyLocationToGroup(group, location, usedNames){
+    group.address = location.addressLine;
+    group.placeName = location.placeName;
+    group.city = location.city;
+    group.county = location.county;
+    group.state = location.state;
+    group.postcode = location.postcode || group.postcode || "";
+    group.addressDistanceMeters = Number.isFinite(location.distanceMeters) ? location.distanceMeters : null;
+    group.addressConfidence = location.addressConfidence || (location.streetAddressFound ? "Street address resolved" : "Nearest available address; verify before field use");
+    group.addressSource = location.addressSource || group.addressSource || "";
+    group.displayName = location.displayName || "";
+    group.hasStreetNumber = Boolean(location.hasStreetNumber || hasStreetNumberText(location.addressLine));
+    group.addressCandidates = Array.isArray(location.candidates) ? location.candidates : [];
+    group.name = uniqueGroupFolderName(location.folderName || makeBuildingAddressFolderName(location.placeName, location.addressLine, location.city, group.name) || "Unknown Location", usedNames);
+  }
+
+  function applyGroupFieldsToPhotos(group){
+    for(const p of group.photos){
+      p.groupName = group.name;
+      p.address = group.address;
+      p.placeName = group.placeName;
+      p.city = group.city;
+      p.county = group.county;
+      p.state = group.state;
+      p.addressConfidence = group.addressConfidence;
+      p.addressSource = group.addressSource;
+    }
+  }
+
+  function placeMissingGpsPhoto(photo){
+    const bucket = makeTimeBucket(photo.capturedAt);
+    const key = `time-${bucket}`;
+    if(!groups.has(key)) groups.set(key,{ id:key, type:"time", name:sanitizeFolderName(`No_GPS_${bucket}`), address:"No GPS data", placeName:"Outside tagged-photo time ranges", city:"", county:"", state:"", postcode:"", displayName:"", addressDistanceMeters:null, addressConfidence:"No address resolved", addressSource:"No tagged photos in matching time range", hasStreetNumber:false, addressCandidates:[], addressAnchorPhotoId:"", addressAnchorName:"", addressCoordinatePhotoName:"", centroidLat:null, centroidLon:null, gpsStartMs:null, gpsEndMs:null, startMs:null, endMs:null, photos:[] });
+    const group = groups.get(key);
+    photo.groupName = group.name;
+    photo.address = group.address;
+    photo.placeName = group.placeName;
+    photo.addressConfidence = group.addressConfidence;
+    photo.addressSource = group.addressSource;
+    photo.associationMethod = "unmatched-no-gps";
+    photo.matchedTimeReason = "No tagged-photo time range matched this photo.";
+    group.photos.push(photo);
+    updateGroupGeometryAndTimes(group);
+  }
+
+  function findNearbyGroup(lat,lon){ for(const g of groups.values()){ if(g.type !== "gps") continue; if(distanceInMeters(lat,lon,g.centroidLat,g.centroidLon) <= CLUSTER_RADIUS_METERS) return g; } return null; }
+  function updateCentroid(group){ const gps = group.photos.filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon)); if(!gps.length) return; group.centroidLat = gps.reduce((s,p)=>s+p.lat,0)/gps.length; group.centroidLon = gps.reduce((s,p)=>s+p.lon,0)/gps.length; }
+
+
+  async function resolveBestAddress(lat, lon){
+    const cacheKey = `best:${Number(lat).toFixed(5)},${Number(lon).toFixed(5)}`;
+    if(locationCache.has(cacheKey)) return locationCache.get(cacheKey);
+    const fallback = makeFallbackLocation(lat, lon);
+    const candidates = [];
+    candidates.push(...findKnownPublicBuildingCandidates(lat, lon));
+
+    try{ candidates.push(...await findArcGisAddressCandidates(lat, lon, 320)); }
+    catch(err){ console.warn("ArcGIS full address lookup failed", err); }
+
+    try{ candidates.push(...await findNearestOsmAddressCandidates(lat, lon, 320)); }
+    catch(err){ console.warn("Nearest OSM address search failed", err); }
+
+    try{ candidates.push(await reverseGeocode(lat, lon)); }
+    catch(err){ console.warn("Nominatim reverse geocode failed", err); }
+
+    const completed = completeCandidateFullAddresses(candidates.filter(Boolean));
+    const deduped = dedupeAddressCandidates(completed);
+    const ranked = deduped.map(c => ({...c, _score:scoreAddressCandidate(c)})).sort((a,b)=>a._score-b._score);
+    const best = buildBestLocationFromCandidates(ranked, fallback);
+    best.candidates = ranked.slice(0, 5).map(makeAddressCandidateForReview);
+    if(!best.streetAddressFound || !best.hasStreetNumber){
+      best.addressConfidence = best.addressConfidence || "Needs street-number review";
+      if(!/review|verify|street number/i.test(best.addressConfidence)) best.addressConfidence += "; verify street number before export";
+    }
+    locationCache.set(cacheKey, best);
+    return best;
+  }
+
+  function makeAddressCandidateForReview(c){
+    const parsed = parseManualAddress(c.addressLine || "");
+    return {
+      addressLine:c.addressLine || "",
+      placeName:c.placeName || "",
+      city:c.city || parsed.city || "",
+      county:c.county || "",
+      state:c.state || parsed.state || "",
+      postcode:c.postcode || parsed.postcode || "",
+      source:c.addressSource || c.source || "",
+      confidence:c.addressConfidence || c.confidence || "",
+      distanceMeters:Number.isFinite(c.distanceMeters) ? c.distanceMeters : null,
+      streetAddressFound:!!c.streetAddressFound,
+      hasStreetNumber:!!c.hasStreetNumber || hasStreetNumberText(c.addressLine),
+      publicBuilding:!!c.publicBuilding,
+      displayName:c.displayName || "",
+      folderName:c.folderName || makeBuildingAddressFolderName(c.placeName, c.addressLine, c.city || parsed.city, c.addressLine)
+    };
+  }
+
+  function completeCandidateFullAddresses(candidates){
+    const firstPass = candidates.map(c => completeCandidateFromOwnLabels({...c}));
+    const fullPool = firstPass.filter(c => isUsableFullStreetAddress(c.addressLine));
+    return firstPass.map(candidate => {
+      let c = {...candidate};
+      if(isIncompleteStreetAddress(c.addressLine) || !isUsableFullStreetAddress(c.addressLine)){
+        const replacement = findFullAddressReplacement(c, fullPool);
+        if(replacement) c = mergeFullAddressIntoCandidate(c, replacement);
+      }
+      c.hasStreetNumber = Boolean(c.hasStreetNumber || hasStreetNumberText(c.addressLine));
+      c.streetAddressFound = Boolean(c.streetAddressFound || isUsableFullStreetAddress(c.addressLine));
+      c.folderName = makeBuildingAddressFolderName(c.placeName, c.addressLine, c.city, c.folderName || c.addressLine || c.displayName);
+      return c;
+    });
+  }
+
+  function completeCandidateFromOwnLabels(candidate){
+    const fullFromDisplay = extractFullStreetAddressFromText([candidate.displayName, candidate.addressLine].filter(Boolean).join(" | "), candidate.city, candidate.state, candidate.postcode);
+    if(fullFromDisplay && (!isUsableFullStreetAddress(candidate.addressLine) || isIncompleteStreetAddress(candidate.addressLine))){
+      const parsed = parseManualAddress(fullFromDisplay);
+      candidate.addressLine = fullFromDisplay;
+      candidate.city = candidate.city || parsed.city;
+      candidate.state = candidate.state || parsed.state;
+      candidate.postcode = candidate.postcode || parsed.postcode;
+      candidate.hasStreetNumber = true;
+      candidate.streetAddressFound = true;
+      if(!/full address/i.test(candidate.addressConfidence || "")){
+        candidate.addressConfidence = uniqueTextJoin([candidate.addressConfidence, "Full street address completed from lookup label"], "; ");
+      }
+    }
+    return candidate;
+  }
+
+  function findFullAddressReplacement(candidate, fullPool){
+    const num = streetNumberOf(candidate.addressLine || candidate.displayName);
+    const city = String(candidate.city || parseManualAddress(candidate.addressLine).city || "").toLowerCase();
+    return fullPool
+      .filter(full => full !== candidate)
+      .map(full => ({ full, score:getFullAddressReplacementScore(candidate, full, num, city) }))
+      .filter(item => item.score < 500)
+      .sort((a,b)=>a.score-b.score)[0]?.full || null;
+  }
+
+  function getFullAddressReplacementScore(candidate, full, numberHint, cityHint){
+    let score = 0;
+    const fullNum = streetNumberOf(full.addressLine);
+    if(numberHint && fullNum && numberHint === fullNum) score -= 220; else if(numberHint || fullNum) score += 150;
+    const candidateCity = cityHint || String(candidate.city || "").toLowerCase();
+    const fullCity = String(full.city || parseManualAddress(full.addressLine).city || "").toLowerCase();
+    if(candidateCity && fullCity && candidateCity === fullCity) score -= 120;
+    else if(candidateCity && fullCity) score += 90;
+    const candidatePlace = normalizeAddressKey(candidate.placeName || "");
+    const fullPlace = normalizeAddressKey(full.placeName || "");
+    if(candidatePlace && fullPlace && (candidatePlace.includes(fullPlace) || fullPlace.includes(candidatePlace))) score -= 90;
+    if(Number.isFinite(candidate.distanceMeters) && Number.isFinite(full.distanceMeters)) score += Math.abs(candidate.distanceMeters - full.distanceMeters);
+    else score += 60;
+    return score;
+  }
+
+  function mergeFullAddressIntoCandidate(candidate, replacement){
+    const parsed = parseManualAddress(replacement.addressLine || "");
+    return {
+      ...candidate,
+      addressLine:replacement.addressLine || candidate.addressLine,
+      city:candidate.city || replacement.city || parsed.city || "",
+      state:candidate.state || replacement.state || parsed.state || "",
+      postcode:candidate.postcode || replacement.postcode || parsed.postcode || "",
+      hasStreetNumber:true,
+      streetAddressFound:true,
+      addressConfidence:uniqueTextJoin([candidate.addressConfidence, "Full street address completed from alternate recommendation"], "; ")
+    };
+  }
+
+  function streetNumberOf(value){
+    const m = String(value || "").match(/^\s*(\d+[a-z0-9-]*)\b/i) || String(value || "").match(/[,|]\s*(\d+[a-z0-9-]*)\b/i);
+    return m ? m[1].toLowerCase() : "";
+  }
+
+  function firstAddressSegment(value){ return String(value || "").split(",")[0].trim(); }
+  function hasMeaningfulStreetAfterNumber(value){
+    const first = firstAddressSegment(value).replace(/^\s*\d+[a-z0-9-]*\s*/i, "").trim();
+    return hasStreetNumberText(value) && /[a-z]{2,}/i.test(first);
+  }
+  function isIncompleteStreetAddress(value){ return hasStreetNumberText(value) && !hasMeaningfulStreetAfterNumber(firstAddressSegment(value)); }
+  function isUsableFullStreetAddress(value){ return hasStreetNumberText(value) && hasMeaningfulStreetAfterNumber(firstAddressSegment(value)); }
+
+  function extractFullStreetAddressFromText(value, cityHint="", stateHint="", postcodeHint=""){
+    const cleaned = String(value || "").replace(/\bUnited States(?: of America)?\b/ig, "").replace(/\bUSA\b/ig, "");
+    const chunks = cleaned.split(/[|;]/).flatMap(part => part.split(",").map(x => x.trim()).filter(Boolean));
+    const idx = chunks.findIndex(part => hasMeaningfulStreetAfterNumber(part));
+    if(idx < 0) return "";
+    const street = chunks[idx];
+    let city = cityHint || "", state = stateHint || "", postcode = postcodeHint || "";
+    for(let i=idx+1;i<chunks.length;i++){
+      const part = chunks[i];
+      const stateMatch = part.match(/\b([A-Z]{2})\b/i);
+      const zipMatch = part.match(/\b\d{5}(?:-\d{4})?\b/);
+      if(zipMatch) postcode = postcode || zipMatch[0];
+      if(stateMatch && part.length <= 18) state = state || stateMatch[1].toUpperCase();
+      if(!city && !zipMatch && !(stateMatch && part.length <= 18)) city = part;
+      if(city && state && postcode) break;
+    }
+    const stateZip = [state, postcode].filter(Boolean).join(" ");
+    return cleanFolderPart([street, city, stateZip].filter(Boolean).join(", "));
+  }
+
+  function scoreAddressCandidate(c){
+    let score = 0;
+    const distance = Number.isFinite(c.distanceMeters) ? c.distanceMeters : 400;
+    score += Math.min(distance, 1000);
+    if(c.hasStreetNumber) score -= 900; else score += 350;
+    if(c.streetAddressFound) score -= 500; else score += 250;
+    if(hasCommonName(c.placeName)) score -= 300;
+    if(c.publicBuilding) score -= 260;
+    if(/known public building/i.test(c.addressSource || "")) score -= 1200;
+    if(/ArcGIS/i.test(c.addressSource || "")) score -= 90;
+    if(/OSM address|OSM public|OSM building|OSM POI/i.test(c.addressSource || "")) score -= 140;
+    if(/Nominatim/i.test(c.addressSource || "")) score += 40;
+    if(/coordinate fallback/i.test(c.addressSource || "")) score += 900;
+    return score;
+  }
+
+  function findKnownPublicBuildingCandidates(lat, lon){
+    if(!Number.isFinite(lat) || !Number.isFinite(lon)) return [];
+    return KNOWN_PUBLIC_BUILDINGS
+      .map(item => {
+        const distanceMeters = distanceInMeters(lat, lon, item.lat, item.lon);
+        return {
+          ...item,
+          folderName:makeBuildingAddressFolderName(item.placeName, item.addressLine, item.city, item.addressLine),
+          displayName:`${item.placeName} | ${item.addressLine}`,
+          distanceMeters,
+          streetAddressFound:true,
+          hasStreetNumber:true,
+          publicBuilding:true,
+          addressSource:"Known public building seed",
+          addressConfidence:"Known public building matched near cluster coordinate"
+        };
+      })
+      .filter(item => item.distanceMeters <= item.radiusMeters);
+  }
+
+  function buildBestLocationFromCandidates(ranked, fallback){
+    const list = ranked && ranked.length ? ranked : [fallback];
+    const bestAddress =
+      list.find(c => c.streetAddressFound && c.hasStreetNumber && hasStreetNumberText(c.addressLine)) ||
+      list.find(c => c.hasStreetNumber && hasStreetNumberText(c.addressLine)) ||
+      list.find(c => c.addressLine) ||
+      fallback;
+    const bestName = list
+      .filter(c => hasCommonName(c.placeName))
+      .sort((a,b)=>scoreNamedBuildingCandidate(a)-scoreNamedBuildingCandidate(b))[0] || bestAddress;
+    const merged = {
+      ...bestAddress,
+      placeName:bestName.placeName || bestAddress.placeName || fallback.placeName,
+      addressLine:bestAddress.addressLine || bestName.addressLine || fallback.addressLine,
+      city:bestAddress.city || bestName.city || fallback.city || "",
+      county:bestAddress.county || bestName.county || fallback.county || "",
+      state:bestAddress.state || bestName.state || fallback.state || "",
+      postcode:bestAddress.postcode || bestName.postcode || fallback.postcode || "",
+      displayName:[bestName.placeName || bestAddress.placeName, bestAddress.addressLine || bestName.addressLine].filter(Boolean).join(" | "),
+      distanceMeters:Number.isFinite(bestName.distanceMeters) ? bestName.distanceMeters : bestAddress.distanceMeters,
+      publicBuilding:Boolean(bestName.publicBuilding || bestAddress.publicBuilding),
+      addressSource:uniqueTextJoin([bestName.addressSource, bestAddress.addressSource], " + "),
+      addressConfidence:bestAddress.hasStreetNumber ? "Nearest named building with full street-number address" : "Nearest named building; verify street number before export"
+    };
+    merged.streetAddressFound = Boolean(bestAddress.streetAddressFound || (hasStreetNumberText(merged.addressLine) && /\b(st|street|rd|road|ave|avenue|blvd|boulevard|dr|drive|ln|lane|hwy|highway|ct|court|pl|place|bayou)\b/i.test(merged.addressLine)));
+    merged.hasStreetNumber = Boolean(bestAddress.hasStreetNumber || hasStreetNumberText(merged.addressLine));
+    merged.folderName = makeBuildingAddressFolderName(merged.placeName, merged.addressLine, merged.city, fallback.folderName);
+    return merged;
+  }
+
+  function scoreNamedBuildingCandidate(c){
+    let score = Number.isFinite(c.distanceMeters) ? c.distanceMeters : 400;
+    if(c.publicBuilding) score -= 300;
+    if(c.hasStreetNumber) score -= 80;
+    if(/known public building/i.test(c.addressSource || "")) score -= 1200;
+    if(/ArcGIS/i.test(c.addressSource || "")) score -= 40;
+    return score;
+  }
+
+  function uniqueTextJoin(values, separator){
+    const seen = new Set(), out = [];
+    for(const value of values){
+      const text = String(value || "").trim();
+      const key = text.toLowerCase();
+      if(text && !seen.has(key)){ seen.add(key); out.push(text); }
+    }
+    return out.join(separator || " | ");
+  }
+
+  function dedupeAddressCandidates(candidates){
+    const out = [], seen = new Set();
+    for(const c of candidates){
+      const key = normalizeAddressKey([c.placeName, c.addressLine || c.displayName].filter(Boolean).join(" | "));
+      if(!key || seen.has(key)) continue;
+      seen.add(key);
+      out.push(c);
+    }
+    return out;
+  }
+
+  function normalizeAddressKey(v){ return String(v || "").toLowerCase().replace(/\b(united states|usa|us)\b/g,"").replace(/[^a-z0-9]+/g,"").trim(); }
+  function hasStreetNumberText(v){ return /^\s*\d+[a-z0-9-]*\b/i.test(String(v || "")); }
+  function hasCommonName(v){ const s=String(v || "").trim(); return !!s && !isGenericPlaceName(s) && !/^\d+\b/.test(s); }
+  function isGenericPlaceName(value){
+    const s = String(value || "").trim();
+    return !s || /^(nearest|closest|nearby|reverse geocode|mapped address|identified building|closest named place|nearest mapped address|user-reviewed location|user-verified address|closest named place\/address candidate|unit\s+\w+|yes|no|building)$/i.test(s);
+  }
+  function isPublicBuildingText(text){
+    return /\b(government|public|parish|county|city|municipal|police|sheriff|fire|animal|shelter|control|courthouse|townhall|library|school|health|clinic|hospital|utility|waste|maintenance|department|office|administration|emergency|services)\b/i.test(String(text || ""));
+  }
+  function isPublicBuildingTags(tags){
+    return isPublicBuildingText([tags.amenity,tags.office,tags.government,tags.emergency,tags.social_facility,tags.building,tags.operator,tags.name,tags.official_name].filter(Boolean).join(" "));
+  }
+  function isPublicArcGisCandidate(a, placeName){
+    return isPublicBuildingText([placeName,a.Type,a.Addr_type,a.PlaceName,a.Name,a.POIName,a.Category,a.Subregion].filter(Boolean).join(" "));
+  }
+
+  async function findArcGisAddressCandidates(lat, lon, radiusMeters){
+    if(!Number.isFinite(lat) || !Number.isFinite(lon)) return [];
+    const distance = Math.max(50, Math.min(500, Math.round(radiusMeters || 240)));
+    const url = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode?f=json&location=${encodeURIComponent(`${lon},${lat}`)}&distance=${distance}&featureTypes=PointAddress,StreetAddress,POI&langCode=en&outSR=4326&returnIntersection=false`;
+    const res = await fetch(url, {headers:{Accept:"application/json"}});
+    if(!res.ok) throw new Error("ArcGIS reverse geocode failed");
+    const data = await res.json();
+    if(data.error) throw new Error(data.error.message || "ArcGIS reverse geocode returned an error");
+    const candidate = arcGisReverseToLocation(data, lat, lon, distance);
+    return candidate ? [candidate] : [];
+  }
+
+  function arcGisReverseToLocation(data, imageLat, imageLon, requestedDistance){
+    const a = (data && data.address) || {};
+    const loc = data && data.location ? data.location : {};
+    const elemLat = Number(loc.y);
+    const elemLon = Number(loc.x);
+    const distanceMeters = Number.isFinite(elemLat) && Number.isFinite(elemLon) ? distanceInMeters(imageLat, imageLon, elemLat, elemLon) : null;
+    const house = a.AddNum || a.House || "";
+    const streetName = a.StName || a.StreetName || "";
+    const streetType = a.StType || "";
+    const streetDir = a.StDir || "";
+    const rawStreet = a.StAddr || [house, streetDir, streetName, streetType].filter(Boolean).join(" ").replace(/\s+/g," ").trim();
+    const city = a.City || a.Subregion || "";
+    const county = a.Subregion || "";
+    const state = abbreviateState(a.RegionAbbr || a.Region || "");
+    const postcode = a.Postal || a.PostalExt || "";
+    const stateZip = [state, postcode].filter(Boolean).join(" ");
+    const matchAddress = a.Match_addr || a.LongLabel || a.ShortLabel || "";
+    const labelAddress = extractFullStreetAddressFromText([a.LongLabel, a.Match_addr, a.ShortLabel].filter(Boolean).join(" | "), city, state, postcode);
+    const street = hasMeaningfulStreetAfterNumber(rawStreet) ? rawStreet : "";
+    const addressLine = street ? [street, city, stateZip].filter(Boolean).join(", ") : (labelAddress || cleanArcGisAddress(matchAddress));
+    const placeName = pickArcGisCommonName(a, addressLine);
+    const hasNumber = Boolean(a.AddNum || hasStreetNumberText(addressLine));
+    const hasStreet = Boolean(street || /\b(st|street|rd|road|ave|avenue|blvd|boulevard|dr|drive|ln|lane|hwy|highway|ct|court|pl|place)\b/i.test(addressLine));
+    const streetAddressFound = hasNumber && hasStreet;
+    if(!addressLine) return null;
+    return {
+      folderName:makeBuildingAddressFolderName(placeName, addressLine, city, addressLine),
+      addressLine,
+      placeName:placeName || "Closest named place",
+      city,
+      county,
+      state,
+      postcode,
+      displayName:a.LongLabel || matchAddress || addressLine,
+      distanceMeters,
+      streetAddressFound,
+      hasStreetNumber:hasNumber,
+      publicBuilding:isPublicArcGisCandidate(a, placeName),
+      addressSource:`ArcGIS full reverse geocode within ${requestedDistance}m`,
+      addressConfidence:streetAddressFound ? `Full street address candidate${Number.isFinite(distanceMeters) ? ` (${Math.round(distanceMeters)}m from image coordinate)` : ""}` : "Closest named place/address candidate; verify street number before export"
+    };
+  }
+
+  function cleanArcGisAddress(v){
+    const text = String(v || "").split(", United States")[0].replace(/, USA$/i,"").trim();
+    return text;
+  }
+
+  function pickArcGisCommonName(a, addressLine){
+    const candidates = [a.PlaceName, a.Name, a.POIName, a.ShortLabel, a.LongLabel, a.Match_addr]
+      .map(v => String(v || "").trim())
+      .filter(Boolean)
+      .map(v => v.split(",")[0].trim())
+      .filter(v => v && normalizeAddressKey(v) !== normalizeAddressKey(addressLine));
+    return candidates.find(v => hasCommonName(v)) || "";
+  }
+
+  async function findNearestOsmAddressCandidates(lat, lon, radiusMeters){
+    if(!Number.isFinite(lat) || !Number.isFinite(lon)) return [];
+    const radius = Math.max(25, Math.min(500, Math.round(radiusMeters || 160)));
+    const query = `[out:json][timeout:16];(
+      node(around:${radius},${lat},${lon})["addr:housenumber"];
+      way(around:${radius},${lat},${lon})["addr:housenumber"];
+      relation(around:${radius},${lat},${lon})["addr:housenumber"];
+      node(around:${radius},${lat},${lon})["addr:full"];
+      way(around:${radius},${lat},${lon})["addr:full"];
+      relation(around:${radius},${lat},${lon})["addr:full"];
+      node(around:${radius},${lat},${lon})["amenity"];
+      way(around:${radius},${lat},${lon})["amenity"];
+      relation(around:${radius},${lat},${lon})["amenity"];
+      node(around:${radius},${lat},${lon})["office"];
+      way(around:${radius},${lat},${lon})["office"];
+      relation(around:${radius},${lat},${lon})["office"];
+      node(around:${radius},${lat},${lon})["government"];
+      way(around:${radius},${lat},${lon})["government"];
+      relation(around:${radius},${lat},${lon})["government"];
+      node(around:${radius},${lat},${lon})["emergency"];
+      way(around:${radius},${lat},${lon})["emergency"];
+      relation(around:${radius},${lat},${lon})["emergency"];
+      node(around:${radius},${lat},${lon})["building"]["name"];
+      way(around:${radius},${lat},${lon})["building"]["name"];
+      relation(around:${radius},${lat},${lon})["building"]["name"];
+    );out center tags;`;
+    const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+    const res = await fetch(url, {headers:{Accept:"application/json"}});
+    if(!res.ok) throw new Error("Overpass nearest address/POI lookup failed");
+    const data = await res.json();
+    return (data.elements || [])
+      .map(el => osmElementToLocation(el, lat, lon))
+      .filter(Boolean)
+      .sort((a,b)=>scoreAddressCandidate(a)-scoreAddressCandidate(b));
+  }
+
+  function osmElementToLocation(el, imageLat, imageLon){
+    const tags = (el && el.tags) || {};
+    const elemLat = Number.isFinite(el.lat) ? el.lat : Number(el.center && el.center.lat);
+    const elemLon = Number.isFinite(el.lon) ? el.lon : Number(el.center && el.center.lon);
+    if(!Number.isFinite(elemLat) || !Number.isFinite(elemLon)) return null;
+    const house = tags["addr:housenumber"] || "";
+    const street = tags["addr:street"] || tags["addr:place"] || "";
+    const full = tags["addr:full"] || "";
+    const unit = tags["addr:unit"] || "";
+    const line1 = full || [house, street].filter(Boolean).join(" ").trim();
+    const hasNumber = Boolean(full ? hasStreetNumberText(full) : house);
+    const city = tags["addr:city"] || tags["addr:town"] || tags["addr:village"] || tags["addr:hamlet"] || "";
+    const county = tags["addr:county"] || "";
+    const state = abbreviateState(tags["addr:state"] || "");
+    const postcode = tags["addr:postcode"] || "";
+    const stateZip = [state, postcode].filter(Boolean).join(" ");
+    const addressLine = line1 ? [line1, city, stateZip].filter(Boolean).join(", ") : "";
+    const placeName = tags.name || tags.operator || tags.brand || tags.official_name || tags.alt_name || tags.short_name || tags.building || tags.amenity || tags.office || (unit ? `Unit ${unit}` : "");
+    const publicBuilding = isPublicBuildingTags(tags);
+    const distanceMeters = distanceInMeters(imageLat, imageLon, elemLat, elemLon);
+    if(!addressLine && !placeName) return null;
+    return {
+      folderName:makeBuildingAddressFolderName(placeName, addressLine, city, addressLine || placeName),
+      addressLine:addressLine || placeName,
+      placeName:placeName || "Nearest mapped address",
+      city,
+      county,
+      state,
+      postcode,
+      displayName:[placeName,addressLine].filter(Boolean).join(" | "),
+      distanceMeters,
+      streetAddressFound:Boolean((full || (house && street)) && hasNumber),
+      hasStreetNumber:hasNumber,
+      publicBuilding,
+      addressSource:publicBuilding ? `Nearest OSM public building/POI within ${Math.round(distanceMeters)}m of address image` : `Nearest OSM address/POI tag within ${Math.round(distanceMeters)}m of address image`,
+      addressConfidence:hasNumber ? `Closest mapped street address (${Math.round(distanceMeters)}m from image coordinate)` : `Nearby named place/POI (${Math.round(distanceMeters)}m); verify street number before export`
+    };
+  }
+
+  async function reverseGeocode(lat,lon){
+    const cacheKey = `${Number(lat).toFixed(5)},${Number(lon).toFixed(5)}`;
+    if(locationCache.has(cacheKey)) return locationCache.get(cacheKey);
+    await sleep(NOMINATIM_DELAY_MS);
+    const fallback = makeFallbackLocation(lat, lon);
+    try{
+      const url = `https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&namedetails=1&extratags=1&zoom=18&layer=address,poi&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`;
+      const res = await fetch(url,{headers:{Accept:"application/json"}});
+      if(!res.ok) throw new Error("Reverse geocoding failed");
+      const data = await res.json(), a = data.address || {}, nd = data.namedetails || {}, ex = data.extratags || {};
+      const house = a.house_number || a.house || "";
+      const road = a.road || a.pedestrian || a.footway || a.service || a.residential || a.cycleway || "";
+      const street = [house,road].filter(Boolean).join(" ").trim();
+      const city = a.city || a.town || a.village || a.hamlet || a.suburb || a.municipality || a.locality || "";
+      const county = a.county || a.parish || a.region || "";
+      const state = a.state_code || abbreviateState(a.state || a.province || "");
+      const postcode = a.postcode || "";
+      const building = a.building || a.amenity || a.office || a.public_building || a.commercial || "";
+      const placeName = nd.name || data.name || ex.operator || ex.brand || building || a.shop || a.leisure || "Nearest identified building";
+      const localityLine = [city, state, postcode].filter(Boolean).join(", ");
+      const displayFirst = data.display_name ? data.display_name.split(",").slice(0,5).map(s=>s.trim()).filter(Boolean).join(", ") : "";
+      const addressLine = street ? [street, localityLine].filter(Boolean).join(", ") : (displayFirst || [road,city,county,state].filter(Boolean).join(", ") || fallback.addressLine);
+      const folderName = makeBuildingAddressFolderName(placeName, addressLine || fallback.addressLine, city, fallback.folderName);
+      const streetAddressFound = Boolean(street && road && house);
+      const result = { folderName, addressLine, placeName, city, county, state, postcode, displayName:data.display_name || "", streetAddressFound, hasStreetNumber:Boolean(house || hasStreetNumberText(addressLine)), publicBuilding:isPublicBuildingText([building,placeName,a.amenity,a.office,a.public_building].filter(Boolean).join(" ")), addressSource:"Nominatim reverse geocode fallback", addressConfidence: streetAddressFound ? "Street address resolved from reverse geocode" : "Nearest available reverse geocode; verify street number before export" };
+      locationCache.set(cacheKey,result);
+      return result;
+    }catch(err){ console.warn(err); locationCache.set(cacheKey,fallback); return fallback; }
+  }
+
+  function render(){ renderMetrics(); renderClusterMap(); renderDirectoryTree(); renderAddressReview(); renderPreviews(); renderGroups(); updateButtons(); }
+
+  function renderMetrics(){ const withGps = photos.filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon)).length; totalCount.textContent=photos.length; gpsCount.textContent=withGps; missingGpsCount.textContent=photos.length-withGps; annotatedCount.textContent=photos.filter(p=>p.markers.length).length; groupCount.textContent=groups.size; }
+
+  function ensureClusterMap(){
+    if(!clusterMapEl || !window.L) return false;
+    if(clusterMap) return true;
+    clusterMapEl.innerHTML = "";
+    clusterMap = L.map(clusterMapEl, {scrollWheelZoom:false, preferCanvas:true});
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom:19,
+      attribution:"&copy; OpenStreetMap contributors"
+    }).addTo(clusterMap);
+    clusterMapLayer = L.layerGroup().addTo(clusterMap);
+    clusterMap.setView([30.289, -91.234], 11);
+    setTimeout(()=>clusterMap.invalidateSize(), 60);
+    return true;
+  }
+
+  function renderClusterMap(){
+    if(!clusterMapEl) return;
+    const gpsPhotos = photos.filter(hasGps);
+    if(!gpsPhotos.length){
+      if(clusterMapLayer) clusterMapLayer.clearLayers();
+      if(!clusterMap){ clusterMapEl.innerHTML = '<div class="empty">Map will appear after GPS-tagged photos are processed.</div>'; }
+      if(mapLegend) mapLegend.innerHTML = '<span><span class="legend-dot"></span> Address cluster</span><span><span class="legend-dot photo"></span> GPS photo</span><span>Load GPS photos to generate the geographic cluster map.</span>';
+      return;
+    }
+    if(!ensureClusterMap()){
+      clusterMapEl.innerHTML = '<div class="empty">Map library failed to load. Check internet access and reload.</div>';
+      return;
+    }
+    clusterMapLayer.clearLayers();
+    const bounds = [];
+    for(const g of getSortedGroups().filter(x=>x.type === "gps" && Number.isFinite(x.centroidLat) && Number.isFinite(x.centroidLon))){
+      const center = [g.centroidLat, g.centroidLon];
+      bounds.push(center);
+      L.circle(center, {radius:CLUSTER_RADIUS_METERS, color:"#38bdf8", weight:2, fillColor:"#38bdf8", fillOpacity:.10}).addTo(clusterMapLayer);
+      L.marker(center, {title:g.name || "Address cluster"}).addTo(clusterMapLayer).bindPopup(buildMapPopup(g));
+      for(const p of g.photos.filter(hasGps)){
+        const pt = [p.lat, p.lon];
+        bounds.push(pt);
+        L.circleMarker(pt, {radius:6, color:"#facc15", weight:2, fillColor:"#facc15", fillOpacity:.86}).addTo(clusterMapLayer).bindPopup(`<strong>${escapeHtml(p.fileName)}</strong><br>${escapeHtml(g.name || "Unknown folder")}<br>${escapeHtml(formatDateForDisplay(p.capturedAt))}`);
+      }
+    }
+    if(bounds.length){ clusterMap.fitBounds(bounds, {padding:[28,28], maxZoom:18}); }
+    setTimeout(()=>clusterMap.invalidateSize(), 80);
+    if(mapLegend){
+      const groupTotal = getSortedGroups().filter(x=>x.type === "gps").length;
+      mapLegend.innerHTML = `<span><span class="legend-dot"></span> ${groupTotal} address cluster${groupTotal===1?"":"s"}</span><span><span class="legend-dot photo"></span> ${gpsPhotos.length} GPS photo${gpsPhotos.length===1?"":"s"}</span><span>Circles show the ${CLUSTER_RADIUS_METERS}-meter clustering radius.</span>`;
+    }
+  }
+
+  function buildMapPopup(g){
+    const common = g.placeName ? `<br><strong>Common name:</strong> ${escapeHtml(g.placeName)}` : "";
+    const address = g.address ? `<br><strong>Address:</strong> ${escapeHtml(g.address)}` : "";
+    const confidence = g.addressConfidence ? `<br><strong>Lookup:</strong> ${escapeHtml(g.addressConfidence)}` : "";
+    return `<strong>${escapeHtml(g.name || "Address cluster")}</strong>${common}${address}<br><strong>Photos:</strong> ${g.photos.length}${confidence}`;
+  }
+
+  function renderAddressReview(){
+    if(!addressReviewList) return;
+    const sorted = getSortedGroups();
+    if(!sorted.length){ addressReviewList.innerHTML='<div class="empty">Address rows will appear after processing.</div>'; return; }
+    addressReviewList.innerHTML = sorted.map(g => {
+      const distance = Number.isFinite(g.addressDistanceMeters) ? `${Math.round(g.addressDistanceMeters)}m from address image` : "distance unavailable";
+      const anchor = g.addressAnchorName || "No anchor";
+      const hasNumber = Boolean(g.hasStreetNumber || hasStreetNumberText(g.address));
+      const source = [g.addressSource, g.addressConfidence, distance].filter(Boolean).join(" | ");
+      const candidates = renderCandidateButtons(g);
+      return `<article class="address-card" data-address-group-id="${escapeHtml(g.id)}"><div class="address-card-top"><div><h4 class="address-card-title">${escapeHtml(g.name || "Unknown_Location")}</h4><div class="address-card-meta">${g.photos.length} photo${g.photos.length===1?"":"s"} | anchor: ${escapeHtml(anchor)}</div><span class="lookup-badge ${hasNumber?"":"warn"}">${hasNumber?"Street number present":"Needs street number"}</span></div><span class="mini-badge ${hasNumber ? "" : "warn"}">${escapeHtml(g.addressConfidence || "Needs review")}</span></div><div class="address-field-grid"><label class="field-label">Full street address<input data-address-field="address" value="${escapeHtml(g.address || "")}" placeholder="58030 Meriam St, Plaquemine, LA 70764" /></label><label class="field-label">Common name<input data-address-field="placeName" value="${escapeHtml(g.placeName || "")}" placeholder="Iberville Parish Animal Control" /></label><label class="field-label">Folder name<input data-address-field="folderName" value="${escapeHtml(g.name || "")}" placeholder="Building Name, Street Address, City" /></label><button class="secondary-btn" type="button" data-apply-address-id="${escapeHtml(g.id)}">Use This Address</button></div><div class="address-source-line"><span><strong>Source:</strong> ${escapeHtml(source || "Unknown")}</span></div>${candidates?`<div class="address-candidates">${candidates}</div>`:""}</article>`;
+    }).join("");
+    bindAddressReviewButtons();
+  }
+
+  function renderCandidateButtons(g){
+    return (g.addressCandidates || []).slice(0,5).map((c,i)=>{
+      const label = i === 0 ? "Selected" : `Alt ${i+1}`;
+      const address = c.addressLine || "No address text returned";
+      const needsFull = hasStreetNumberText(address) && !isUsableFullStreetAddress(address);
+      const details = [c.source, c.confidence, Number.isFinite(c.distanceMeters) ? Math.round(c.distanceMeters)+"m" : ""].filter(Boolean).join(" | ");
+      return `<button class="candidate-pill ${i===0?"selected":""}" type="button" data-use-candidate-group-id="${escapeHtml(g.id)}" data-candidate-index="${i}"><strong>${escapeHtml(label)}:</strong> ${escapeHtml([c.placeName,address].filter(Boolean).join(" | "))}<br>${escapeHtml(details)}${needsFull?`<br><span class="candidate-action">Needs fuller street name</span>`:`<span class="candidate-action">Click to use this recommendation</span>`}</button>`;
+    }).join("");
+  }
+
+  function bindAddressReviewButtons(){
+    addressReviewList.querySelectorAll("[data-use-candidate-group-id]").forEach(btn => btn.addEventListener("click", () => {
+      const group = groups.get(btn.dataset.useCandidateGroupId);
+      const index = Number(btn.dataset.candidateIndex);
+      if(!group || !Number.isFinite(index)) return;
+      const candidate = (group.addressCandidates || [])[index];
+      if(!candidate) return;
+      applyCandidateToGroup(group, candidate);
+      refreshGroupFolderNames();
+      render();
+      setStatus("Selected address recommendation applied. ZIP folders and Word document will use this reviewed choice.", false);
+    }));
+    addressReviewList.querySelectorAll("[data-apply-address-id]").forEach(btn => btn.addEventListener("click", () => {
+      const group = groups.get(btn.dataset.applyAddressId);
+      const card = btn.closest(".address-card");
+      if(!group || !card) return;
+      const address = (card.querySelector('[data-address-field="address"]') || {}).value || "";
+      const placeName = (card.querySelector('[data-address-field="placeName"]') || {}).value || "";
+      const folderValue = ((card.querySelector('[data-address-field="folderName"]') || {}).value || "").trim();
+      const folderName = folderValue && folderValue !== (group.name || "") ? folderValue : "";
+      applyManualGroupAddress(group, address.trim(), placeName.trim(), folderName);
+      refreshGroupFolderNames();
+      render();
+      setStatus("Address and common name updated. ZIP folders and Word document will use the reviewed values.", false);
+    }));
+  }
+
+  function applyOverridesAndRefresh(){
+    if(!photos.length){ setStatus("Load photos before applying overrides.", false); return; }
+    let applied = 0;
+    const rules = getAddressOverrideRules();
+    const used = new Set();
+    for(const g of getSortedGroups()){
+      const manual = findManualAddressOverrideForGroup(g, g.photos.find(p=>p.isAddressAnchor) || null, rules);
+      if(manual){ applyLocationToGroup(g, manual, used); applyGroupFieldsToPhotos(g); applied++; }
+      else{ g.name = uniqueGroupFolderName(g.name || makeBuildingAddressFolderName(g.placeName, g.address, g.city, "Unknown Location"), used); applyGroupFieldsToPhotos(g); }
+    }
+    render();
+    setStatus(applied ? `Applied ${applied} address override${applied===1?"":"s"}.` : "No matching override rules found.", false);
+  }
+
+  function applyCandidateToGroup(group, candidate){
+    const address = String(candidate.addressLine || "").trim();
+    const placeName = String(candidate.placeName || "").trim();
+    const parsed = parseManualAddress(address);
+    group.address = address || group.address || "Unknown address";
+    group.placeName = placeName || group.placeName || inferCommonNameForAddress(address) || "Selected search recommendation";
+    group.city = candidate.city || parsed.city || group.city || "";
+    group.county = candidate.county || group.county || "";
+    group.state = candidate.state || parsed.state || group.state || "";
+    group.postcode = candidate.postcode || parsed.postcode || group.postcode || "";
+    group.addressDistanceMeters = Number.isFinite(candidate.distanceMeters) ? candidate.distanceMeters : group.addressDistanceMeters;
+    group.hasStreetNumber = Boolean(candidate.hasStreetNumber || hasStreetNumberText(group.address));
+    group.addressConfidence = candidate.confidence || candidate.addressConfidence || (group.hasStreetNumber ? "Selected full street address recommendation" : "Selected recommendation; verify street number");
+    group.addressSource = candidate.source || candidate.addressSource || "Selected search recommendation";
+    group.displayName = [group.placeName, group.address].filter(Boolean).join(" | ");
+    group.name = makeBuildingAddressFolderName(group.placeName, group.address, group.city, group.name);
+    const selected = makeAddressCandidateForReview({...candidate, addressLine:group.address, placeName:group.placeName, city:group.city, county:group.county, state:group.state, postcode:group.postcode});
+    const rest = (group.addressCandidates || []).filter(c => normalizeAddressKey([c.placeName,c.addressLine].filter(Boolean).join(" | ")) !== normalizeAddressKey([candidate.placeName,candidate.addressLine].filter(Boolean).join(" | "))).map(makeAddressCandidateForReview);
+    group.addressCandidates = [selected, ...rest].slice(0,5);
+    applyGroupFieldsToPhotos(group);
+  }
+
+  function applyManualGroupAddress(group, address, placeName, folderName){
+    const parsed = parseManualAddress(address);
+    group.address = address || group.address || "Unknown address";
+    group.placeName = placeName || group.placeName || inferCommonNameForAddress(address) || "User-reviewed location";
+    group.city = parsed.city || group.city || "";
+    group.state = parsed.state || group.state || "";
+    group.postcode = parsed.postcode || group.postcode || "";
+    group.hasStreetNumber = hasStreetNumberText(group.address);
+    group.addressCandidates = [{addressLine:group.address, placeName:group.placeName, source:"Manual address review before export", confidence:"User-reviewed address", distanceMeters:null, streetAddressFound:true, hasStreetNumber:group.hasStreetNumber}];
+    group.addressConfidence = group.hasStreetNumber ? "User-reviewed full street address" : "User-reviewed address; verify street number";
+    group.addressSource = "Manual address review before export";
+    group.displayName = [group.placeName, group.address].filter(Boolean).join(" | ");
+    group.name = folderName ? sanitizeFolderName(folderName) : makeBuildingAddressFolderName(group.placeName, group.address, group.city, group.name);
+    applyGroupFieldsToPhotos(group);
+  }
+
+  function refreshGroupFolderNames(){
+    const used = new Set();
+    for(const g of getSortedGroups()){
+      g.name = uniqueGroupFolderName(g.name || makeBuildingAddressFolderName(g.placeName, g.address, g.city, "Unknown Location"), used);
+      applyGroupFieldsToPhotos(g);
+    }
+  }
+
+
+  function getGroupsNeedingStreetNumberReview(){
+    return getSortedGroups().filter(g => g.type === "gps" && !hasStreetNumberText(g.address));
+  }
+
+  function requireStreetNumberReviewBeforeExport(){
+    const needsReview = getGroupsNeedingStreetNumberReview();
+    if(!needsReview.length) return true;
+    setStatus(`Full street number required before export: ${needsReview.map(g=>g.name || "Unknown_Location").join(", ")}. Update the Address Review rows, then click Use This Address.`, false);
+    const heading = document.getElementById("address-review-heading");
+    if(heading && heading.scrollIntoView) heading.scrollIntoView({behavior:"smooth", block:"start"});
+    return false;
+  }
+
+  function renderPreviews(){ if(!photos.length){ previewGrid.innerHTML='<div class="empty">Imported photos will appear here.</div>'; return; } previewGrid.innerHTML = photos.map(renderPhotoCard).join(""); bindAnnotateButtons(previewGrid); }
+  function renderGroups(){
+    const sorted = getSortedGroups();
+    if(!sorted.length){ groupsContainer.innerHTML='<div class="empty">Location groups will appear after processing.</div>'; return; }
+    groupsContainer.innerHTML = sorted.map(g=>`<article class="group">${renderGroupHeader(g)}<div class="group-grid">${g.photos.slice().sort(comparePhotoTime).map(renderPhotoCard).join("")}</div></article>`).join("");
+    bindAnnotateButtons(groupsContainer);
+  }
+  function renderPhotoCard(p){
+    const tags = buildPhotoTags(p).map(t=>`<span class="mini-badge ${t.warn?"warn":""}">${escapeHtml(t.label)}</span>`).join("");
+    return `<article class="photo-card"><img class="thumb" src="${p.previewUrl}" alt="${escapeHtml(p.fileName)}" loading="lazy"><div class="photo-meta"><span class="photo-name" title="${escapeHtml(p.relativePath || p.fileName)}">${escapeHtml(p.fileName)}</span><div class="photo-location">${escapeHtml(p.groupName || "Ungrouped")}</div><div class="photo-location">${escapeHtml(formatDateForDisplay(p.capturedAt))}</div>${tags?`<div class="photo-tags">${tags}</div>`:""}${p.markers.length?`<div class="photo-location">${p.markers.length} marker${p.markers.length===1?"":"s"}</div>`:""}${p.warning?`<div class="warning">${escapeHtml(p.warning)}</div>`:""}<button class="secondary-btn annotate-btn" type="button" data-annotate-id="${p.id}">Annotate</button></div></article>`;
+  }
+  function bindAnnotateButtons(root){ root.querySelectorAll("[data-annotate-id]").forEach(btn=>btn.addEventListener("click",()=>openAnnotationModal(btn.dataset.annotateId))); }
+  function getSortedGroups(){ return Array.from(groups.values()).sort((a,b)=>{ if(a.type!==b.type) return a.type==="gps"?-1:1; return (a.name || "").localeCompare(b.name || ""); }); }
+
+
+  function renderDirectoryTree(){
+    if(!directoryTree) return;
+    if(!photos.length){ directoryTree.innerHTML='<div class="empty">Folder structure will appear after processing.</div>'; return; }
+    const note = "ZIP export uses this same structure. Folder names use Building Name, Street Address, City when available, with street number required before export. Review and edit the address/common-name table before ZIP or Word export. Non-GPS screenshots and measurement photos are placed in a GPS address folder when their capture or file time falls inside the folder's GPS-tagged time range, within the endpoint padding, or within the nearest-cluster time window.";
+    directoryTree.innerHTML = `<pre class="tree-text">${escapeHtml(buildDirectoryTreeText())}</pre><div class="tree-note">${escapeHtml(note)}</div>`;
+  }
+
+  function buildDirectoryTreeText(){
+    const sorted = getSortedGroups();
+    if(!sorted.length) return "Photos_By_Location/\n└─ No folders yet";
+    const lines = ["Photos_By_Location/"];
+    sorted.forEach((g, gi)=>{
+      const lastGroup = gi === sorted.length - 1;
+      const gBranch = lastGroup ? "└─ " : "├─ ";
+      const gStem = lastGroup ? "   " : "│  ";
+      lines.push(`${gBranch}${g.name || "Unknown_Location"}/`);
+      const subfolders = getDirectorySubfoldersForGroup(g);
+      const entries = [{name:"Location_Summary.txt", files:null, summary:true}, ...subfolders];
+      entries.forEach((entry, ei)=>{
+        const lastEntry = ei === entries.length - 1;
+        const eBranch = lastEntry ? "└─ " : "├─ ";
+        const eStem = gStem + (lastEntry ? "   " : "│  ");
+        if(entry.summary){ lines.push(`${gStem}${eBranch}${entry.name}`); return; }
+        lines.push(`${gStem}${eBranch}${entry.name}/`);
+        const files = entry.files.slice().sort(comparePhotoTime).map(p=> entry.name === "05_Annotated" ? sanitizeFileName(addSuffixToFileName(p.exportFileName || p.fileName,"_annotated",".jpg")) : sanitizeFileName(p.exportFileName || p.fileName));
+        const shown = files.slice(0, 80);
+        shown.forEach((file, fi)=>{
+          const lastFile = fi === shown.length - 1 && shown.length === files.length;
+          lines.push(`${eStem}${lastFile ? "└─ " : "├─ "}${file}`);
+        });
+        if(files.length > shown.length) lines.push(`${eStem}└─ ... ${files.length - shown.length} more file${files.length - shown.length===1?"":"s"}`);
+      });
+    });
+    return lines.join("\n");
+  }
+
+  function getDirectorySubfoldersForGroup(g){
+    const buckets = new Map();
+    for(const p of g.photos){
+      const folder = getPhotoExportFolderName(p);
+      if(!buckets.has(folder)) buckets.set(folder, []);
+      buckets.get(folder).push(p);
+      if(p.markers.length){
+        if(!buckets.has("05_Annotated")) buckets.set("05_Annotated", []);
+        buckets.get("05_Annotated").push(p);
+      }
+    }
+    const order = ["01_Interior_Address_Anchor","02_GPS_Tagged","03_Time_Matched_No_GPS","04_Unmatched_No_GPS","05_Annotated"];
+    return order.filter(name=>buckets.has(name)).map(name=>({name, files:buckets.get(name)}));
+  }
+
+  function getPhotoExportFolderName(p){
+    if(p.isInteriorCandidate) return "01_Interior_Address_Anchor";
+    if(p.associationMethod === "gps-tagged") return "02_GPS_Tagged";
+    if(p.associationMethod === "time-matched-no-gps") return "03_Time_Matched_No_GPS";
+    return "04_Unmatched_No_GPS";
+  }
+
+  function renderGroupHeader(g){
+    const taggedCount = g.photos.filter(hasGps).length;
+    const timeMatchedCount = g.photos.filter(p=>p.associationMethod === "time-matched-no-gps").length;
+    const interiorCount = g.photos.filter(p=>p.isInteriorCandidate).length;
+    const badges = [
+      `<span class="mini-badge">${taggedCount} GPS</span>`,
+      `<span class="mini-badge">${timeMatchedCount} Time matched</span>`,
+      `<span class="mini-badge">${interiorCount} Interior</span>`,
+      `<span class="mini-badge ${g.type === "gps" && !String(g.addressConfidence || "").toLowerCase().includes("street") ? "warn" : ""}">${escapeHtml(g.addressConfidence || "No address")}</span>`
+    ].join("");
+    const anchor = g.addressAnchorName ? `${g.addressAnchorName}${g.addressCoordinatePhotoName && g.addressCoordinatePhotoName !== g.addressAnchorName ? ` using nearest tagged photo ${g.addressCoordinatePhotoName}` : ""}` : "No interior/address anchor detected";
+    const range = g.type === "gps" ? formatTimeRange(g.gpsStartMs, g.gpsEndMs) : formatTimeRange(g.startMs, g.endMs);
+    return `<div class="group-head"><div class="group-title-row"><h3 class="group-name">${escapeHtml(g.name || "Unknown Location")}</h3><span class="group-count">${g.photos.length} photo${g.photos.length===1?"":"s"}</span></div><p class="group-detail"><strong>Resolved address:</strong> ${escapeHtml([g.placeName,g.address].filter(Boolean).join(" | ") || "Unknown location")}</p><p class="group-detail"><strong>Address anchor:</strong> ${escapeHtml(anchor)}</p><p class="group-detail"><strong>Tagged time range:</strong> ${escapeHtml(range)}</p><div class="folder-path">Photos_By_Location / ${escapeHtml(g.name || "Unknown_Location")}</div><div class="badge-row">${badges}</div></div>`;
+  }
+
+  function buildPhotoTags(p){
+    const tags = [];
+    if(p.isInteriorCandidate) tags.push({label:"Interior"});
+    if(p.isAddressAnchor) tags.push({label:"Address anchor"});
+    if(hasGps(p)) tags.push({label:"GPS"});
+    else if(p.associationMethod === "time-matched-no-gps") tags.push({label:"No GPS time matched"});
+    else tags.push({label:"No GPS unmatched", warn:true});
+    return tags;
+  }
+
+  function buildLocationSummaryText(g){
+    const lines = [];
+    lines.push(`Folder: ${g.name || "Unknown_Location"}`);
+    lines.push(`Resolved address: ${g.address || "Unknown"}`);
+    lines.push(`Common name: ${g.placeName || "Unknown"}`);
+    lines.push(`Street number present: ${g.hasStreetNumber || hasStreetNumberText(g.address) ? "Yes" : "No - verify before export"}`);
+    lines.push(`Address confidence: ${g.addressConfidence || "Unknown"}`);
+    lines.push(`Address source: ${g.addressSource || "Unknown"}`);
+    lines.push(`Interior/address anchor photo: ${g.addressAnchorName || "None detected"}`);
+    if(g.addressCoordinatePhotoName && g.addressCoordinatePhotoName !== g.addressAnchorName) lines.push(`Address coordinate source photo: ${g.addressCoordinatePhotoName}`);
+    if(Number.isFinite(g.addressDistanceMeters)) lines.push(`Address distance from image: ${Math.round(g.addressDistanceMeters)} meters`);
+    if(Number.isFinite(g.centroidLat) && Number.isFinite(g.centroidLon)) lines.push(`GPS centroid: ${g.centroidLat.toFixed(6)}, ${g.centroidLon.toFixed(6)}`);
+    lines.push(`GPS tagged time range: ${formatTimeRange(g.gpsStartMs, g.gpsEndMs)}`);
+    lines.push(`All photo time range: ${formatTimeRange(g.startMs, g.endMs)}`);
+    lines.push("");
+    lines.push("Photos:");
+    for(const p of g.photos.slice().sort(comparePhotoTime)){
+      const gps = hasGps(p) ? `${p.lat.toFixed(6)}, ${p.lon.toFixed(6)}` : "No GPS";
+      const tags = buildPhotoTags(p).map(t=>t.label).join(", ");
+      lines.push(`- ${p.fileName} | ${formatDateForDisplay(p.capturedAt)} | ${gps} | ${tags} | ${p.matchedTimeReason || ""}`);
+    }
+    return lines.join("\n");
+  }
+
+  function hasGps(p){ return Number.isFinite(p && p.lat) && Number.isFinite(p && p.lon); }
+  function capturedMs(p){ const d = p && p.capturedAt instanceof Date && !Number.isNaN(p.capturedAt.getTime()) ? p.capturedAt : new Date(); return d.getTime(); }
+  function comparePhotoTime(a,b){ return capturedMs(a)-capturedMs(b) || String(a.fileName || "").localeCompare(String(b.fileName || "")); }
+  function formatTimeRange(startMs,endMs){ if(!Number.isFinite(startMs) || !Number.isFinite(endMs)) return "No tagged-photo range"; return `${formatDateForDisplay(new Date(startMs))} - ${formatDateForDisplay(new Date(endMs))}`; }
+  function uniqueGroupFolderName(name, used){ let base=sanitizeFolderName(name || "Unknown_Location"), candidate=base, i=2; while(used.has(candidate)){ candidate=`${base}_${i}`; i++; } used.add(candidate); return candidate; }
+
+  function getAddressOverrideRules(){
+    const text = overrideRulesInput ? overrideRulesInput.value : "";
+    return text.split(/\n+/).map(line => line.trim()).filter(line => line && !line.startsWith("#")).map(line => {
+      const m = line.match(/^(.+?)(?:\s*=\s*|\s*=>\s*)(.+)$/);
+      if(!m) return null;
+      const parsed = parseOverrideValue(m[2].trim());
+      return { matcher:m[1].trim().toLowerCase(), address:parsed.address, placeName:parsed.placeName, raw:line };
+    }).filter(rule => rule && rule.matcher && rule.address);
+  }
+
+  function parseOverrideValue(value){
+    const parts = String(value || "").split("|").map(s=>s.trim()).filter(Boolean);
+    if(parts.length >= 2) return { placeName:parts[0], address:parts.slice(1).join(" | ") };
+    return { placeName:"", address:String(value || "").trim() };
+  }
+
+  function findManualAddressOverrideForGroup(group, anchor, rules){
+    if(!rules || !rules.length || !group) return null;
+    const searchable = [];
+    if(group.name) searchable.push(group.name);
+    for(const p of group.photos || []) searchable.push(p.fileName || "", p.relativePath || "");
+    if(anchor) searchable.push(anchor.fileName || "", anchor.relativePath || "");
+    const normalized = searchable.map(v => String(v || "").toLowerCase());
+    const rule = rules.find(r => normalized.some(v => v.includes(r.matcher)));
+    if(!rule) return null;
+    const loc = manualAddressToLocation(rule.address, `Manual override matched ${rule.matcher}`, rule.placeName);
+    loc.overrideMatch = rule.matcher;
+    return loc;
+  }
+
+  function manualAddressToLocation(address, source, placeName){
+    const parsed = parseManualAddress(address);
+    return {
+      folderName:makeBuildingAddressFolderName(placeName || inferCommonNameForAddress(address), address, parsed.city, address),
+      addressLine:address,
+      placeName:placeName || inferCommonNameForAddress(address) || "User-verified address",
+      city:parsed.city || "",
+      county:"",
+      state:parsed.state || "",
+      postcode:parsed.postcode || "",
+      displayName:[placeName,address].filter(Boolean).join(" | "),
+      distanceMeters:null,
+      streetAddressFound:true,
+      hasStreetNumber:hasStreetNumberText(address),
+      candidates:[{addressLine:address, placeName:placeName || inferCommonNameForAddress(address) || "User-verified address", source:source || "Manual address override", confidence:"User-verified exact address", distanceMeters:null, streetAddressFound:true, hasStreetNumber:hasStreetNumberText(address)}],
+      addressSource:source || "Manual address override",
+      addressConfidence:"User-verified exact address"
+    };
+  }
+
+  function inferCommonNameForAddress(address){
+    const key = normalizeAddressKey(address);
+    if(key.includes("58030meriamstplaqueminela70764")) return "Iberville Parish Sheriff";
+    if(key.includes("59815bayourdplaqueminela70764")) return "Iberville Parish Animal Control";
+    return "";
+  }
+
+  function parseManualAddress(address){
+    const parts = String(address || "").split(",").map(p=>p.trim()).filter(Boolean);
+    let city = "", state = "", postcode = "";
+    if(parts.length >= 2) city = parts[parts.length - 2] || "";
+    const last = parts[parts.length - 1] || "";
+    const sm = last.match(/\b([A-Z]{2})\b/i);
+    const pm = last.match(/\b\d{5}(?:-\d{4})?\b/);
+    if(sm) state = sm[1].toUpperCase();
+    if(pm) postcode = pm[0];
+    return { city, state, postcode };
+  }
+
+  function makeAddressFolderName(address, fallback){
+    const base = cleanFolderPart(address || fallback || "Unknown Location");
+    return sanitizeFolderName(base || fallback || "Unknown Location");
+  }
+
+  function makeBuildingAddressFolderName(placeName, addressLine, city, fallback){
+    const name = cleanFolderPart(placeName);
+    const address = cleanFolderPart(addressLine);
+    const cityText = cleanFolderPart(city);
+    const parts = [];
+    if(name && !isGenericPlaceName(name)) parts.push(name);
+    if(address) parts.push(address);
+    else if(cityText) parts.push(cityText);
+    if(!parts.length && fallback) parts.push(fallback);
+    return sanitizeFolderName(parts.join(", "));
+  }
+
+  function cleanFolderPart(value){
+    return String(value || "")
+      .replace(/\bUnited States(?: of America)?\b/ig, "")
+      .replace(/\bUSA\b/ig, "")
+      .replace(/\s+/g, " ")
+      .replace(/\s+,/g, ",")
+      .replace(/,+/g, ",")
+      .replace(/^,|,$/g, "")
+      .trim();
+  }
+
+  function parseDateTimeFromFileName(value){
+    const text = String(value || "");
+    let m = text.match(/\b(20\d{2})([01]\d)([0-3]\d)[-_ ]?([0-2]\d)([0-5]\d)([0-5]\d)?\b/);
+    if(m) return makeLocalDateFromParts(m[1], m[2], m[3], m[4], m[5], m[6] || "00");
+    m = text.match(/\b(20\d{2})[-_. ]([01]?\d)[-_. ]([0-3]?\d)(?:[^0-9A-Za-z]+(?:at\s*)?([0-2]?\d)[-_.:]([0-5]\d)(?:[-_.:]([0-5]\d))?\s*(AM|PM)?)?/i);
+    if(m){
+      let hour = m[4] || "12", minute = m[5] || "00", second = m[6] || "00";
+      const ampm = (m[7] || "").toUpperCase();
+      if(ampm === "PM" && Number(hour) < 12) hour = String(Number(hour) + 12);
+      if(ampm === "AM" && Number(hour) === 12) hour = "0";
+      return makeLocalDateFromParts(m[1], m[2], m[3], hour, minute, second);
+    }
+    return null;
+  }
+
+  function makeLocalDateFromParts(year, month, day, hour="0", minute="0", second="0"){
+    const d = new Date(Number(year), Number(month)-1, Number(day), Number(hour), Number(minute), Number(second));
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  function makeFallbackLocation(lat,lon){ return { folderName:sanitizeFolderName(`Lat_${Number(lat).toFixed(5)}_Lon_${Number(lon).toFixed(5)}`), addressLine:`${Number(lat).toFixed(5)}, ${Number(lon).toFixed(5)}`, placeName:"Reverse geocode unavailable", city:"", county:"", state:"", postcode:"", displayName:"", distanceMeters:null, streetAddressFound:false, hasStreetNumber:false, candidates:[], addressSource:"Coordinate fallback", addressConfidence:"Coordinate fallback; verify full street address manually" }; }
+  function looksLikeInteriorPhoto(fileName, relativePath){ const text = String(`${relativePath || ""} ${fileName || ""}`).replace(/[_.-]+/g," ").toLowerCase(); return /\b(interior|inside|indoor|room|lobby|hallway|hall|foyer|vestibule|closet|electrical room|mechanical room|server room|control room|equipment room|panel|rack|cabinet|shelter|building interior|inside building|station interior)\b/i.test(text); }
+
+  function renderMarkerPalette(){ markerPalette.innerHTML = MARKER_OPTIONS.map(o=>`<button class="tool-btn ${o.id===activeMarkerType?"active":""}" type="button" data-marker-id="${o.id}"><span class="tool-symbol" style="color:${o.color};border-color:${o.color}">${escapeHtml(o.symbol)}</span><span class="tool-text"><strong>${escapeHtml(o.category)}</strong><span>${escapeHtml(o.label)}</span></span></button>`).join(""); markerPalette.querySelectorAll("[data-marker-id]").forEach(b=>b.addEventListener("click",()=>{ activeMarkerType=b.dataset.markerId; renderMarkerPalette(); })); }
+  function openAnnotationModal(photoId){ activePhoto = photos.find(p=>p.id===photoId); if(!activePhoto) return; modalTitle.textContent = `Annotate: ${activePhoto.fileName}`; modalSubTitle.textContent = activePhoto.groupName || "Ungrouped"; activeImage = new Image(); activeImage.onload = () => { const maxWidth=1400, scale=Math.min(1,maxWidth/activeImage.naturalWidth); canvas.width=Math.max(1,Math.round(activeImage.naturalWidth*scale)); canvas.height=Math.max(1,Math.round(activeImage.naturalHeight*scale)); annotationModal.classList.add("open"); annotationModal.setAttribute("aria-hidden","false"); drawAnnotationCanvas(); }; activeImage.onerror = () => setStatus("Could not open this image for annotation.", false); activeImage.src = activePhoto.previewUrl; }
+  function closeAnnotationModal(){ annotationModal.classList.remove("open"); annotationModal.setAttribute("aria-hidden","true"); activePhoto=null; activeImage=null; }
+  function drawAnnotationCanvas(targetCanvas=canvas, image=activeImage, photo=activePhoto){
+    if(!image || !photo) return;
+    const c=targetCanvas.getContext("2d");
+    c.clearRect(0,0,targetCanvas.width,targetCanvas.height);
+    c.drawImage(image,0,0,targetCanvas.width,targetCanvas.height);
+    const placedRects = [];
+    photo.markers.forEach((m,index)=>drawMarker(c,m,targetCanvas.width,targetCanvas.height,placedRects,index));
+  }
+
+  function drawMarker(c,m,w,h,placedRects=[],index=0){
+    const o=getMarkerOption(m.type), x=m.x*w, y=m.y*h;
+    const scale=Math.max(.85,Math.min(2,w/1100));
+    const pinR=Math.max(9,Math.round(w*.0095));
+    const lineW=Math.max(2,Math.round(w*.003));
+    const layout = buildMarkerBubbleLayout(c,o,w,h,scale);
+    const rect = chooseBubbleRect(x,y,pinR,layout.bw,layout.bh,w,h,placedRects,index,scale,layout);
+    placedRects.push(expandRect(rect, Math.round(8*scale)));
+    const bx=rect.x, by=rect.y, bw=rect.w, bh=rect.h;
+    const attachX=clamp(x,bx+layout.padX,bx+bw-layout.padX);
+    const attachY=by+bh;
+
+    c.save();
+    c.lineWidth=lineW;
+    c.strokeStyle=colorToRgba(o.color,.50);
+    c.setLineDash([Math.round(8*scale),Math.round(5*scale)]);
+    c.beginPath(); c.moveTo(attachX,attachY); c.lineTo(x,y); c.stroke();
+    c.setLineDash([]);
+
+    c.shadowColor="rgba(15,23,42,.20)"; c.shadowBlur=Math.round(14*scale); c.shadowOffsetY=Math.round(5*scale);
+    c.fillStyle="rgba(255,255,255,.98)"; c.strokeStyle="#334155";
+    roundedRect(c,bx,by,bw,bh,Math.round(13*scale)); c.fill(); c.stroke();
+    c.shadowColor="transparent"; c.shadowBlur=0; c.shadowOffsetY=0;
+
+    c.save();
+    roundedRect(c,bx,by,bw,layout.headerH,Math.round(13*scale)); c.clip();
+    c.fillStyle=o.color; c.fillRect(bx,by,bw,layout.headerH);
+    c.restore();
+
+    c.save();
+    c.beginPath(); c.rect(bx+layout.padX,by,bw-layout.padX*2,layout.headerH); c.clip();
+    c.fillStyle=o.textColor; c.textBaseline="middle"; c.textAlign="left"; c.font=`950 ${layout.codeFont}px ${MARKUP_FONT}`;
+    c.fillText(o.symbol,bx+layout.padX,by+layout.headerH/2+1);
+    c.font=`800 ${Math.max(10,Math.round(layout.codeFont*.70))}px ${MARKUP_FONT}`; c.textAlign="right";
+    c.fillText(o.category,bx+bw-layout.padX,by+layout.headerH/2+1);
+    c.restore();
+
+    c.save();
+    c.beginPath();
+    c.rect(bx+layout.padX,by+layout.headerH+layout.padY*.55,bw-layout.padX*2,bh-layout.headerH-layout.padY);
+    c.clip();
+    c.textAlign="left"; c.textBaseline="top"; c.fillStyle="#172033"; c.font=`850 ${layout.labelFont}px ${MARKUP_FONT}`;
+    layout.labelLines.forEach((line,i)=>c.fillText(line,bx+layout.padX,by+layout.headerH+layout.padY+i*layout.lh));
+    c.restore();
+
+    c.fillStyle="rgba(255,255,255,.98)"; c.strokeStyle=o.color; c.lineWidth=lineW;
+    c.beginPath(); c.arc(x,y,pinR,0,Math.PI*2); c.fill(); c.stroke();
+    c.strokeStyle="#0f172a"; c.lineWidth=Math.max(1.4,lineW*.70); c.beginPath(); c.moveTo(x-pinR*1.35,y); c.lineTo(x+pinR*1.35,y); c.moveTo(x,y-pinR*1.35); c.lineTo(x,y+pinR*1.35); c.stroke();
+    drawMarkerIcon(c,o,x,y,pinR*.70);
+    c.restore();
+  }
+
+  function buildMarkerBubbleLayout(c,o,w,h,scale){
+    const margin=Math.max(10,Math.round(12*scale));
+    const gap=Math.max(8,Math.round(10*scale));
+    const columns=chooseTopBubbleColumns(w,margin,gap);
+    const usableW=Math.max(1,w-margin*2-gap*(columns-1));
+    const bw=Math.max(180,Math.floor(usableW/columns));
+    let labelFont=Math.max(10,Math.min(15,Math.round(w*.0125)));
+    let codeFont=Math.max(10,Math.min(14,Math.round(w*.0115)));
+    const text=`${o.category} · ${o.label}`;
+    let labelLines=[], lh=0, padX=0, padY=0, headerH=0, bh=0;
+    for(let attempt=0; attempt<6; attempt++){
+      padX=Math.max(9,Math.round(labelFont*.82));
+      padY=Math.max(6,Math.round(labelFont*.52));
+      c.font=`850 ${labelFont}px ${MARKUP_FONT}`;
+      labelLines=wrapCanvasText(c,text,Math.max(40,bw-padX*2),4);
+      lh=Math.round(labelFont*1.22);
+      headerH=Math.round(codeFont*2.10);
+      bh=headerH+labelLines.length*lh+padY*2;
+      if(bh <= Math.max(86,h*.18) || labelFont <= 10) break;
+      labelFont=Math.max(10,Math.round(labelFont*.90));
+      codeFont=Math.max(10,Math.round(codeFont*.92));
+    }
+    return {labelFont,codeFont,padX,padY,labelLines,lh,headerH,bw,bh,columns,margin,gap};
+  }
+
+  function chooseTopBubbleColumns(w,margin,gap){
+    let columns = w >= 1280 ? 4 : (w >= 900 ? 3 : (w >= 620 ? 2 : 1));
+    while(columns > 1 && (w - margin*2 - gap*(columns-1)) / columns < 250) columns--;
+    return Math.max(1,columns);
+  }
+
+  function chooseBubbleRect(x,y,pinR,bw,bh,w,h,placedRects,index,scale,layout={}){
+    const gap=layout.gap || Math.max(8,Math.round(10*scale));
+    const margin=layout.margin || Math.max(10,Math.round(12*scale));
+    const columns=layout.columns || Math.max(1,Math.floor((w-margin*2+gap)/(bw+gap)));
+    const row=Math.floor(index/columns);
+    const col=index % columns;
+    const rx=margin + col*(bw+gap);
+    const maxY=Math.max(margin,h-bh-margin);
+    const ry=Math.min(margin + row*(bh+gap), maxY);
+    return clampRectToCanvas({x:rx,y:ry,w:bw,h:bh,pos:"top-row-grid"},w,h,margin);
+  }
+
+  function clampRectToCanvas(r,w,h,margin){
+    const safeMargin = Number.isFinite(margin) ? margin : 0;
+    const maxX = Math.max(safeMargin, w - r.w - safeMargin);
+    const maxY = Math.max(safeMargin, h - r.h - safeMargin);
+    return { x:clamp(r.x,safeMargin,maxX), y:clamp(r.y,safeMargin,maxY), w:r.w, h:r.h, pos:r.pos || "" };
+  }
+
+  function expandRect(r,p){ return {x:r.x-p,y:r.y-p,w:r.w+p*2,h:r.h+p*2}; }
+
+  function colorToRgba(color, alpha){
+    const value = String(color || "#000000").trim();
+    const hex = value.match(/^#?([0-9a-f]{6})$/i);
+    if(hex){
+      const n = parseInt(hex[1], 16);
+      return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${alpha})`;
+    }
+    const shortHex = value.match(/^#?([0-9a-f]{3})$/i);
+    if(shortHex){
+      const h = shortHex[1].split("").map(ch=>ch+ch).join("");
+      const n = parseInt(h, 16);
+      return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${alpha})`;
+    }
+    const rgb = value.match(/rgba?\(([^)]+)\)/i);
+    if(rgb){
+      const parts = rgb[1].split(",").slice(0,3).map(x=>x.trim()).join(",");
+      return `rgba(${parts},${alpha})`;
+    }
+    return `rgba(0,0,0,${alpha})`;
+  }
+
+  function drawMarkerIcon(c,o,x,y,r){
+    c.save(); c.lineCap="round"; c.lineJoin="round"; c.strokeStyle=o.color; c.fillStyle=o.color; c.lineWidth=Math.max(2,r*.18);
+    if(o.icon==="power"){
+      c.beginPath(); c.moveTo(x-r*.18,y-r*.75); c.lineTo(x-r*.62,y+r*.05); c.lineTo(x-r*.12,y+r*.05); c.lineTo(x-r*.32,y+r*.78); c.lineTo(x+r*.55,y-r*.18); c.lineTo(x+r*.08,y-r*.18); c.closePath(); c.fill();
+    }else if(o.icon==="ethernet"){
+      c.strokeRect(x-r*.68,y-r*.38,r*1.36,r*.92); c.beginPath(); c.moveTo(x-r*.36,y-r*.38); c.lineTo(x-r*.36,y-r*.66); c.lineTo(x+r*.36,y-r*.66); c.lineTo(x+r*.36,y-r*.38); c.stroke();
+      for(let i=-2;i<=2;i++){ c.beginPath(); c.moveTo(x+i*r*.22,y+r*.54); c.lineTo(x+i*r*.22,y+r*.76); c.stroke(); }
+    }else if(o.icon==="mount"){
+      c.lineWidth=Math.max(2,r*.22); c.beginPath(); c.moveTo(x-r*.72,y-r*.42); c.lineTo(x+r*.72,y-r*.42); c.moveTo(x-r*.72,y+r*.42); c.lineTo(x+r*.72,y+r*.42); c.stroke();
+      c.fillStyle="#fff"; for(let i=-1;i<=1;i++){ c.beginPath(); c.arc(x+i*r*.48,y,r*.14,0,Math.PI*2); c.fill(); c.stroke(); }
+    }else{
+      c.beginPath(); c.moveTo(x,y+r*.68); c.lineTo(x,y-r*.52); c.moveTo(x-r*.42,y+r*.68); c.lineTo(x+r*.42,y+r*.68); c.stroke();
+      c.beginPath(); c.arc(x,y-r*.52,r*.45,Math.PI*1.15,Math.PI*1.85); c.stroke();
+      c.beginPath(); c.arc(x,y-r*.52,r*.72,Math.PI*1.05,Math.PI*1.95); c.stroke();
+    }
+    c.restore();
+  }
+  function getMarkerOption(type){ return MARKER_OPTIONS.find(o=>o.id===type) || MARKER_OPTIONS[0]; }
+  function wrapCanvasText(c,text,maxWidth,maxLines=Infinity){
+    const normalized=String(text || "").replace(/\s+/g," ").trim();
+    if(!normalized) return [""];
+    const words=normalized.split(" "), lines=[];
+    let line="";
+    const pushLine = value => { if(value && lines.length < maxLines) lines.push(value); };
+    const splitLongWord = word => {
+      const parts=[]; let chunk="";
+      for(const ch of String(word)){
+        const test=chunk + ch;
+        if(chunk && c.measureText(test).width > maxWidth){ parts.push(chunk); chunk=ch; }
+        else chunk=test;
+      }
+      if(chunk) parts.push(chunk);
+      return parts;
+    };
+    for(const rawWord of words){
+      const pieces = c.measureText(rawWord).width > maxWidth ? splitLongWord(rawWord) : [rawWord];
+      for(const word of pieces){
+        const test=line ? `${line} ${word}` : word;
+        if(c.measureText(test).width <= maxWidth || !line){ line=test; }
+        else{ pushLine(line); line=word; if(lines.length >= maxLines) break; }
+      }
+      if(lines.length >= maxLines) break;
+    }
+    if(line && lines.length < maxLines) lines.push(line);
+    if(lines.length === maxLines){
+      let last=lines[lines.length-1] || "";
+      while(last.length>1 && c.measureText(last + "…").width>maxWidth) last=last.slice(0,-1);
+      lines[lines.length-1]=last.endsWith("…") ? last : `${last}…`;
+    }
+    return lines;
+  }
+  function roundedRect(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
+  async function getAnnotatedImageDataUrl(photo,maxWidth=960,quality=.72){ const img=await loadImage(photo.previewUrl); const scale=Math.min(1,maxWidth/img.naturalWidth); const off=document.createElement("canvas"); off.width=Math.max(1,Math.round(img.naturalWidth*scale)); off.height=Math.max(1,Math.round(img.naturalHeight*scale)); drawAnnotationCanvas(off,img,photo); return off.toDataURL("image/jpeg",quality); }
+  function loadImage(src){ return new Promise((resolve,reject)=>{ const img=new Image(); img.onload=()=>resolve(img); img.onerror=reject; img.src=src; }); }
+
+  async function downloadZip(){
+    if(!photos.length) return;
+    if(!requireStreetNumberReviewBeforeExport()) return;
+    if(!window.JSZip){ setStatus("ZIP library failed to load. Check internet access and reload.", false); return; }
+    setStatus("Building ZIP file with address folders...",true);
+    downloadBtn.disabled=true; downloadDocBtn.disabled=true;
+    try{
+      const zip=new JSZip();
+      const root = zip.folder("Photos_By_Location");
+      for(const g of getSortedGroups()){
+        const folder=root.folder(g.name || "Unknown_Location"), usedBySubfolder=new Map();
+        folder.file("Location_Summary.txt", buildLocationSummaryText(g));
+        for(const p of g.photos.slice().sort(comparePhotoTime)){
+          const subName = getPhotoExportFolderName(p);
+          const sub = folder.folder(subName);
+          if(!usedBySubfolder.has(subName)) usedBySubfolder.set(subName, new Set());
+          const used = usedBySubfolder.get(subName);
+          const base=sanitizeFileName(p.exportFileName || p.fileName), safe=uniqueFileName(base,used);
+          used.add(safe);
+          sub.file(safe,p.exportFile || p.file);
+          if(p.markers.length){
+            const annSubName = "05_Annotated";
+            const annSub = folder.folder(annSubName);
+            if(!usedBySubfolder.has(annSubName)) usedBySubfolder.set(annSubName, new Set());
+            const annUsed = usedBySubfolder.get(annSubName);
+            const ann=uniqueFileName(addSuffixToFileName(base,"_annotated",".jpg"),annUsed);
+            annUsed.add(ann);
+            annSub.file(ann,dataUrlToUint8Array(await getAnnotatedImageDataUrl(p,1200,.78)));
+          }
+          await idlePause();
+        }
+      }
+      const blob=await zip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:6}},m=>setStatus(`Building ZIP file... ${Math.round(m.percent)}%`,true));
+      downloadBlob(blob,"Photos_By_Address_Folders.zip");
+      setStatus("ZIP download ready.",false);
+    }catch(err){ console.error(err); setStatus("Could not create ZIP file.",false); }
+    finally{ updateButtons(); }
+  }
+
+  async function downloadWordDocument(){ const annotated=photos.filter(p=>p.markers.length); if(!annotated.length){ setStatus("Add at least one marker before exporting a Word document.",false); return; } if(!requireStreetNumberReviewBeforeExport()) return; if(!window.docx){ setStatus("Word export library failed to load. Check internet access and reload.",false); return; } setStatus("Building Word document...",true); downloadBtn.disabled=true; downloadDocBtn.disabled=true; try{ const {Document,Packer,Paragraph,TextRun,ImageRun,HeadingLevel,AlignmentType,PageBreak}=window.docx; const sorted=getSortedGroups().filter(g=>g.photos.some(p=>p.markers.length)); const children=[new Paragraph({text:"Photo Annotation Report",heading:HeadingLevel.TITLE}),new Paragraph({children:[new TextRun({text:buildDocumentLocationTitle(sorted),bold:true,size:28})]}),new Paragraph({children:[new TextRun({text:"Images are compressed for screen viewing at approximately 96 DPI to reduce document size.",italics:true})]}),new Paragraph({children:[new TextRun({text:`Generated ${new Date().toLocaleString()}`,italics:true})]}),new Paragraph({text:" "})]; let idx=0; for(let gi=0;gi<sorted.length;gi++){ const g=sorted[gi], imgs=g.photos.filter(p=>p.markers.length).sort((a,b)=>a.capturedAt-b.capturedAt); children.push(new Paragraph({text:g.name || "Unknown Location",heading:HeadingLevel.HEADING_1})); children.push(new Paragraph({children:[new TextRun({text:"City / County / Parish: ",bold:true}),new TextRun(buildGroupJurisdiction(g))]})); children.push(new Paragraph({children:[new TextRun({text:"Common name / Address: ",bold:true}),new TextRun([g.placeName,g.address].filter(Boolean).join(" | ") || "Unknown")]})); children.push(new Paragraph({text:" "})); for(let pi=0;pi<imgs.length;pi++){ const p=imgs[pi]; idx++; setStatus(`Adding annotated image ${idx} of ${annotated.length}...`,true); const dataUrl=await getAnnotatedImageDataUrl(p,960,.72), bytes=dataUrlToUint8Array(dataUrl), img=await loadImage(dataUrl), maxW=576, ratio=Math.min(1,maxW/img.naturalWidth), width=Math.round(img.naturalWidth*ratio), height=Math.round(img.naturalHeight*ratio); children.push(new Paragraph({text:p.fileName,heading:HeadingLevel.HEADING_2})); children.push(new Paragraph({children:[new TextRun({text:"Captured: ",bold:true}),new TextRun(formatDateForDisplay(p.capturedAt))]})); if(Number.isFinite(p.lat)&&Number.isFinite(p.lon)) children.push(new Paragraph({children:[new TextRun({text:"GPS: ",bold:true}),new TextRun(`${p.lat.toFixed(6)}, ${p.lon.toFixed(6)}`)]})); children.push(new Paragraph({children:[new TextRun({text:"Markers: ",bold:true}),new TextRun(p.markers.map((m,i)=>`${i+1}. ${getMarkerOption(m.type).symbol} ${getMarkerOption(m.type).label}`).join("; "))]})); children.push(new Paragraph({text:" "})); children.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:bytes,transformation:{width,height}})]})); if(!(gi===sorted.length-1 && pi===imgs.length-1)) children.push(new Paragraph({children:[new PageBreak()]})); await idlePause(); } } const doc=new Document({creator:"BRINC TANK Photo Location Grouper",title:"Photo Annotation Report",description:"Annotated photo report generated in browser.",sections:[{properties:{page:{margin:{top:720,right:720,bottom:720,left:720}}},children}]}); const blob=await Packer.toBlob(doc); downloadBlob(blob, makeWordDocumentFileName(sorted)); setStatus("Word document download ready.",false); }catch(err){ console.error(err); setStatus("Could not create Word document.",false); }finally{ updateButtons(); } }
+
+  async function getFilesFromDrop(dataTransfer){
+    const files=[];
+    if(dataTransfer.items && dataTransfer.items.length){
+      const entries=Array.from(dataTransfer.items).map(item=>item.webkitGetAsEntry && item.webkitGetAsEntry()).filter(Boolean);
+      if(entries.length){ for(const entry of entries) files.push(...await readEntry(entry)); return files; }
+    }
+    return Array.from(dataTransfer.files || []);
+  }
+  function readEntry(entry){ return new Promise(resolve=>{ if(entry.isFile){ entry.file(file=>resolve([file]),()=>resolve([])); } else if(entry.isDirectory){ const reader=entry.createReader(), all=[]; const readBatch=()=>reader.readEntries(async entries=>{ if(!entries.length){ resolve(all); return; } for(const ent of entries) all.push(...await readEntry(ent)); readBatch(); },()=>resolve(all)); readBatch(); } else resolve([]); }); }
+  async function canBrowserPreviewFile(file){ const url=URL.createObjectURL(file); try{ await loadImageWithTimeout(url,2200); return true; }catch{ return false; }finally{ URL.revokeObjectURL(url); } }
+  function loadImageWithTimeout(src,timeoutMs){ return new Promise((resolve,reject)=>{ const img=new Image(), timer=setTimeout(()=>{ cleanup(); reject(new Error("Image decode timed out")); },timeoutMs); function cleanup(){ clearTimeout(timer); img.onload=null; img.onerror=null; } img.onload=()=>{ cleanup(); resolve(img); }; img.onerror=()=>{ cleanup(); reject(new Error("Image decode failed")); }; img.src=src; }); }
+  async function convertImageToJpeg(file){
+    if(isHeicFile(file)) return decodeHeicToJpeg(file);
+    if(isJpegFile(file)) return file;
+    return convertRasterImageToJpeg(file,.9);
+  }
+  async function decodeHeicToJpeg(file){
+    let converted = null;
+    const heicToFn = window.heicTo || window.HeicTo || window.heicToJpeg;
+    if(typeof heicToFn === "function"){
+      converted = await heicToFn({ blob:file, type:"image/jpeg", quality:.86 });
+    }else if(window.heic2any){
+      converted = await window.heic2any({ blob:file, toType:"image/jpeg", quality:.86 });
+    }else{
+      throw new Error("HEIC decoder library not loaded");
+    }
+    const blob = Array.isArray(converted) ? converted[0] : converted;
+    return new File([blob],replaceFileExtension(file.name,".jpg"),{type:"image/jpeg",lastModified:file.lastModified || Date.now()});
+  }
+  async function convertRasterImageToJpeg(file,quality=.9){
+    const url=URL.createObjectURL(file);
+    try{
+      const img=await loadImageWithTimeout(url,20000);
+      const w=Math.max(1,img.naturalWidth || img.width || 1), h=Math.max(1,img.naturalHeight || img.height || 1);
+      const off=document.createElement("canvas"); off.width=w; off.height=h;
+      const c=off.getContext("2d"); c.fillStyle="#fff"; c.fillRect(0,0,w,h); c.drawImage(img,0,0,w,h);
+      const blob=await new Promise((resolve,reject)=>off.toBlob(b=>b?resolve(b):reject(new Error("JPEG encode failed")),"image/jpeg",quality));
+      return new File([blob],replaceFileExtension(file.name,".jpg"),{type:"image/jpeg",lastModified:file.lastModified || Date.now()});
+    }finally{ URL.revokeObjectURL(url); }
+  }
+  function convertHeicToJpeg(file){ return decodeHeicToJpeg(file); }
+  async function makeHeicPlaceholder(file){
+    const canvas=document.createElement("canvas"), w=900, h=680, ctx=canvas.getContext("2d");
+    canvas.width=w; canvas.height=h;
+    ctx.fillStyle="#f8fafc"; ctx.fillRect(0,0,w,h);
+    ctx.fillStyle="#e2e8f0"; ctx.fillRect(36,36,w-72,h-72);
+    ctx.fillStyle="#172033"; ctx.font="bold 42px system-ui, sans-serif"; ctx.textAlign="center"; ctx.fillText("HEIC Photo",w/2,h/2-42);
+    ctx.fillStyle="#697386"; ctx.font="24px system-ui, sans-serif"; ctx.fillText("Preview conversion unavailable in this browser",w/2,h/2+4);
+    ctx.font="20px system-ui, sans-serif"; ctx.fillText(file.name || "Original HEIC retained",w/2,h/2+42);
+    return new Promise(resolve=>canvas.toBlob(blob=>resolve(new File([blob],replaceFileExtension(file.name || "heic_preview",".jpg"),{type:"image/jpeg",lastModified:file.lastModified || Date.now()})),"image/jpeg",.82));
+  }
+  async function getFileKey(file){ const fallback=`${file.name}-${file.size}-${file.lastModified}`; if(!crypto.subtle) return fallback; const sample=await file.slice(0,Math.min(file.size,1024*1024)).arrayBuffer(); const digest=await crypto.subtle.digest("SHA-256",sample); const hash=Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,"0")).join(""); return `${hash}-${file.size}`; }
+  function convertDmsToDecimal(value,ref){ const d=numberFromExifRational(value[0]), m=numberFromExifRational(value[1]), s=numberFromExifRational(value[2]); let dec=d+m/60+s/3600; if(ref==="S" || ref==="W") dec*=-1; return dec; }
+  function numberFromExifRational(v){ if(typeof v==="number") return v; if(Array.isArray(v) && v.length>=2) return Number(v[0])/Number(v[1]); if(v && typeof v.numerator==="number" && typeof v.denominator==="number") return v.numerator/v.denominator; if(v && typeof v.value==="number") return v.value; return Number(v) || 0; }
+  function getExifReaderTag(tags,names){ return names.map(name=>tags && tags[name]).find(Boolean) || null; }
+  function getExifReaderValue(tag){ if(!tag) return null; if(tag.computed !== undefined) return tag.computed; if(tag.value !== undefined) return tag.value; if(tag.description !== undefined) return tag.description; return null; }
+  function readExifReaderGps(tags){ const latTag=getExifReaderTag(tags,["GPSLatitude","GPS Latitude"]), lonTag=getExifReaderTag(tags,["GPSLongitude","GPS Longitude"]); const latRef=getExifReaderValue(getExifReaderTag(tags,["GPSLatitudeRef","GPS Latitude Ref"])); const lonRef=getExifReaderValue(getExifReaderTag(tags,["GPSLongitudeRef","GPS Longitude Ref"])); const lat=parseCoordinateValue(getExifReaderValue(latTag) ?? (latTag && latTag.description), latRef); const lon=parseCoordinateValue(getExifReaderValue(lonTag) ?? (lonTag && lonTag.description), lonRef); return Number.isFinite(lat) && Number.isFinite(lon) && !(lat===0 && lon===0) ? {lat, lon} : null; }
+  function readExifReaderDate(tags){ const tag=getExifReaderTag(tags,["DateTimeOriginal","CreateDate","ModifyDate","DateTime","Date Time Original","Create Date","Modify Date"]); const raw=getExifReaderValue(tag); if(raw instanceof Date) return raw; const value=Array.isArray(raw) ? raw[0] : raw; return parseExifDate(String(value || "")) || parseLooseDate(String(value || "")); }
+  function parseCoordinateValue(value,ref){ if(value === null || value === undefined) return NaN; if(typeof value === "number") return applyCoordinateRef(value,ref); if(Array.isArray(value)){ if(value.length >= 3){ const dec=numberFromExifRational(value[0])+numberFromExifRational(value[1])/60+numberFromExifRational(value[2])/3600; return applyCoordinateRef(dec,ref); } if(value.length === 1) return applyCoordinateRef(numberFromExifRational(value[0]),ref); } const text=String(value); const nums=(text.match(/-?\d+(?:\.\d+)?/g) || []).map(Number); if(!nums.length) return NaN; let dec=nums[0]; if(nums.length >= 3 && /deg|degrees|degree|[\u00b0'"]/i.test(text)) dec=Math.abs(nums[0])+nums[1]/60+nums[2]/3600; if(/[Ss]|south/i.test(text)) dec=-Math.abs(dec); if(/[Ww]|west/i.test(text)) dec=-Math.abs(dec); return applyCoordinateRef(dec,ref); }
+  function applyCoordinateRef(value,ref){ const r=String(ref || ""); if(/[Ss]|south/i.test(r)) return -Math.abs(value); if(/[Ww]|west/i.test(r)) return -Math.abs(value); return value; }
+  function parseLooseDate(value){ const normalized=String(value || "").replace(/^(\d{4}):(\d{2}):(\d{2})/,"$1-$2-$3"); const d=new Date(normalized); return Number.isNaN(d.getTime()) ? null : d; }
+  function parseExifDate(value){ if(!value || typeof value!=="string") return null; const m=value.match(/^(\d{4}):(\d{2}):(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/); if(!m) return null; const d=new Date(Number(m[1]),Number(m[2])-1,Number(m[3]),Number(m[4]),Number(m[5]),Number(m[6])); return Number.isNaN(d.getTime()) ? null : d; }
+  function makeTimeBucket(date){ const d=date instanceof Date && !Number.isNaN(date.getTime()) ? date : new Date(); const bucketMs=MISSING_GPS_TIME_BUCKET_MINUTES*60*1000; const b=new Date(Math.floor(d.getTime()/bucketMs)*bucketMs); const pad=n=>String(n).padStart(2,"0"); return `${b.getFullYear()}-${pad(b.getMonth()+1)}-${pad(b.getDate())}_${pad(b.getHours())}-${pad(b.getMinutes())}`; }
+  function distanceInMeters(lat1,lon1,lat2,lon2){ const R=6371000, toRad=d=>d*Math.PI/180, dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1); const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2; return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
+  function buildDocumentLocationTitle(sorted){ const g=sorted.find(x=>x.type==="gps"); return g ? buildGroupJurisdiction(g) : "No GPS location available"; }
+  function makeWordDocumentFileName(sorted){
+    const groupsForName = (sorted && sorted.length ? sorted : getSortedGroups()).filter(g=>g.type === "gps");
+    const cityNames = Array.from(new Set(groupsForName.map(g=>cleanFileNamePart(g.city || parseManualAddress(g.address).city || "")).filter(Boolean)));
+    const city = cityNames.length === 1 ? cityNames[0] : (cityNames[0] || "Unknown City");
+    const created = formatFileTimestamp(new Date());
+    return sanitizeFileName(`${city}_${created}_Annotated_Photos.docx`);
+  }
+  function formatFileTimestamp(date){
+    const pad = n => String(n).padStart(2,"0");
+    return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}_${pad(date.getHours())}-${pad(date.getMinutes())}-${pad(date.getSeconds())}`;
+  }
+  function cleanFileNamePart(value){ return String(value || "").trim().replace(/[<>:"/\\|?*\x00-\x1F]/g," ").replace(/\s+/g," ").slice(0,80).trim(); }
+  function buildGroupJurisdiction(g){ return [g.city || "Unknown City", g.county || "Unknown County/Parish", g.state || ""].filter(Boolean).join(", "); }
+  function dataUrlToUint8Array(dataUrl){ const base64=dataUrl.split(",")[1], bin=atob(base64), bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i); return bytes; }
+  function downloadBlob(blob,fileName){ const url=URL.createObjectURL(blob), a=document.createElement("a"); a.href=url; a.download=fileName; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
+  function uniqueFileName(fileName,used){ let candidate=fileName, i=2; const dot=fileName.lastIndexOf("."), base=dot>-1?fileName.slice(0,dot):fileName, ext=dot>-1?fileName.slice(dot):""; while(used.has(candidate)){ candidate=`${base}_${i}${ext}`; i++; } return candidate; }
+  function addSuffixToFileName(name,suffix,forceExt){ const dot=name.lastIndexOf("."), base=dot>-1?name.slice(0,dot):name, ext=forceExt || (dot>-1?name.slice(dot):""); return `${base}${suffix}${ext}`; }
+  function sanitizeFileName(name){ return String(name || "photo.jpg").trim().replace(/[<>:"/\\|?*\x00-\x1F]/g,"_").replace(/\s+/g,"_").slice(0,140) || `photo_${makeId()}.jpg`; }
+  function sanitizeFolderName(name){ return String(name || "Unknown Location").trim().replace(/[<>:"/\\|?*\x00-\x1F]/g,"").replace(/\s+/g," ").replace(/\s*,\s*/g,", ").replace(/,+/g,",").replace(/^\.+|\.+$/g,"").slice(0,140).trim() || "Unknown Location"; }
+  function replaceFileExtension(name,ext){ return String(name).replace(/\.[^.]+$/,"") + ext; }
+  function appendWarning(a,b){ return [a,b].filter(Boolean).join(" "); }
+  function formatDateForDisplay(d){ return d instanceof Date && !Number.isNaN(d.getTime()) ? d.toLocaleString() : "Unknown"; }
+  function abbreviateState(state){ const map={"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY","District of Columbia":"DC"}; return map[state] || state; }
+  function setStatus(msg,processing){ statusText.textContent=msg; statusCard.classList.toggle("processing",!!processing); }
+  function updateButtons(){ downloadBtn.disabled=photos.length===0; downloadDocBtn.disabled=photos.filter(p=>p.markers.length).length===0; }
+  function escapeHtml(v){ return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+  function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+  function clamp(v,min,max){ return Math.min(max,Math.max(min,v)); }
+  function idlePause(){ return new Promise(resolve=>{ if("requestIdleCallback" in window) requestIdleCallback(()=>resolve(),{timeout:250}); else setTimeout(resolve,0); }); }
+  function makeId(){ return crypto.randomUUID ? crypto.randomUUID() : `id-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
+})();
+
+</script>
+</body>
+</html>

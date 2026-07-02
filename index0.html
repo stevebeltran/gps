@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PhotoLocation Grouper</title>
+  <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/heic-to@1.5.2/dist/iife/heic-to.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/lite.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exifreader@4.41.0/dist/exif-reader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+  <style>
+    :root{
+      --bg:#eef3f8;--panel:#ffffff;--text:#111827;--muted:#5b6678;--border:#c9d3df;
+      --accent:#1f5fbf;--accent2:#164a97;--danger:#9f1239;--warnbg:#fff7ed;--warnbd:#fed7aa;
+      --shadow:0 18px 45px rgba(15,23,42,.10);--radius:16px;--grid:#d8e1eb;
+      --font-ui:"Aptos","IBM Plex Sans","Segoe UI",Arial,sans-serif;--font-mono:"Aptos Mono","Cascadia Mono","SFMono-Regular",Consolas,monospace;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;font-family:var(--font-ui);background:
+      linear-gradient(rgba(31,95,191,.055) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(31,95,191,.055) 1px,transparent 1px),
+      radial-gradient(circle at top left,rgba(31,95,191,.16),transparent 30rem),var(--bg);
+      background-size:32px 32px,32px 32px,auto,auto;color:var(--text)
+    }
+    .app{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:42px 0 60px}
+    header{position:relative;padding-left:18px;border-left:5px solid var(--accent)}
+    h1{margin:0;font-size:clamp(2rem,5vw,3.25rem);letter-spacing:-.045em;line-height:1;font-weight:900;text-transform:uppercase}
+    .subtitle{margin:12px 0 0;max-width:880px;color:var(--muted);line-height:1.55;font-size:1rem}
+    .drop-zone{display:grid;place-items:center;min-height:245px;padding:34px;background:rgba(255,255,255,.90);border:2px dashed #9fb1c5;border-radius:var(--radius);box-shadow:var(--shadow);text-align:center;transition:.16s ease;cursor:pointer;outline:1px solid rgba(31,95,191,.08);outline-offset:-8px}
+    .drop-zone.dragover{border-color:var(--accent);background:rgba(31,95,191,.07);transform:translateY(-1px)}
+    .drop-icon{width:72px;height:72px;display:grid;place-items:center;margin:0 auto 18px;border-radius:18px;background:#e7eef9;color:var(--accent);font-size:2rem;font-weight:900;border:1px solid #bdd0eb;box-shadow:inset 0 0 0 7px rgba(255,255,255,.55)}
+    .drop-title{margin:0 0 8px;font-size:1.35rem;font-weight:900;letter-spacing:-.02em}.drop-text{margin:0;color:var(--muted)}.hidden-input{display:none}.drop-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+    .toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:22px 0}.status-card{min-height:52px;display:flex;align-items:center;gap:12px;color:var(--muted);font-size:.95rem}.spinner{display:none;width:22px;height:22px;border:3px solid #dbeafe;border-top-color:var(--accent);border-radius:999px;animation:spin .85s linear infinite}.processing .spinner{display:block}@keyframes spin{to{transform:rotate(360deg)}}
+    button{appearance:none;border:0;border-radius:11px;padding:13px 18px;background:var(--accent);color:#fff;font-weight:900;font-size:.94rem;cursor:pointer;box-shadow:0 12px 22px rgba(31,95,191,.24);transition:.16s ease;text-transform:uppercase;letter-spacing:.015em}
+    button:hover:not(:disabled){background:var(--accent2);transform:translateY(-1px)}button:disabled{cursor:not-allowed;opacity:.48;box-shadow:none}.secondary-btn{background:#eef2f7;color:#172033;box-shadow:none;border:1px solid #d4dce7}.secondary-btn:hover:not(:disabled){background:#e2e8f0}
+    .summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-bottom:22px}.metric{background:rgba(255,255,255,.94);border:1px solid var(--border);border-radius:15px;padding:18px;box-shadow:0 8px 22px rgba(15,23,42,.05);position:relative;overflow:hidden}.metric:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}.metric strong{display:block;font-family:var(--font-mono);font-size:1.6rem;letter-spacing:-.04em}.metric span{color:var(--muted);font-size:.82rem;text-transform:uppercase;letter-spacing:.055em;font-weight:800}
+    .section-title{margin:30px 0 14px;font-size:1rem;letter-spacing:.08em;text-transform:uppercase}.preview-grid,.group-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(152px,1fr));gap:14px}.photo-card{background:var(--panel);border:1px solid var(--border);border-radius:15px;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.06)}.thumb{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:#e5e7eb}.photo-meta{padding:11px}.photo-name{display:block;font-size:.82rem;font-weight:900;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.photo-location{margin-top:5px;color:var(--muted);font-size:.78rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.warning{margin-top:8px;padding:7px 8px;color:var(--danger);background:var(--warnbg);border:1px solid var(--warnbd);border-radius:8px;font-size:.75rem;font-weight:800}
+    .groups{display:grid;gap:20px}.group{background:rgba(255,255,255,.86);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:0 10px 28px rgba(15,23,42,.06)}.group h3{display:flex;justify-content:space-between;gap:12px;margin:0 0 6px;font-size:1.02rem;text-transform:uppercase;letter-spacing:.025em}.group .group-sub{margin:0 0 14px;color:var(--muted);font-size:.9rem}.empty{display:grid;place-items:center;min-height:140px;color:var(--muted);background:rgba(255,255,255,.66);border:1px dashed var(--border);border-radius:var(--radius);text-align:center;padding:22px}.annotate-btn{width:100%;margin-top:10px;padding:9px 10px;font-size:.78rem}
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(15,23,42,.78);z-index:50;padding:18px}.modal.open{display:flex}.modal-card{width:min(1180px,100%);max-height:96vh;background:#fff;border-radius:18px;overflow:hidden;display:flex;flex-direction:column;border:1px solid #99a8ba;box-shadow:0 26px 80px rgba(0,0,0,.35)}.modal-head,.modal-foot{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border)}.modal-foot{border-top:1px solid var(--border);border-bottom:0}.modal-title{font-weight:950;text-transform:uppercase;letter-spacing:.02em}.modal-sub{color:var(--muted);font-size:.88rem}.canvas-wrap{overflow:auto;background:#0f172a;padding:14px;display:grid;place-items:center;background-image:linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px);background-size:28px 28px}.canvas-wrap canvas{max-width:100%;height:auto;background:#fff;box-shadow:0 12px 36px rgba(0,0,0,.45)}.marker-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.marker-palette{display:flex;gap:8px;flex-wrap:wrap;max-width:800px}.tool-btn{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f8fafc;color:#172033;border:1px solid var(--border);box-shadow:none;font-size:.76rem;text-transform:none;letter-spacing:0}.tool-btn.active{outline:3px solid rgba(31,95,191,.22);border-color:var(--accent);background:#eef5ff}.tool-symbol{display:inline-grid;place-items:center;min-width:42px;height:28px;border-radius:999px;font-family:var(--font-mono);font-weight:950;font-size:.72rem;border:2px solid currentColor;background:#fff}.tool-text{display:grid;text-align:left;line-height:1.05}.tool-text strong{font-size:.64rem;color:var(--muted);letter-spacing:.07em;text-transform:uppercase}.tool-text span{font-weight:900}.hint{color:var(--muted);font-size:.86rem}
+    @media(max-width:900px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.toolbar{align-items:stretch}.toolbar button{width:100%}.modal-head,.modal-foot{align-items:flex-start;flex-direction:column}}@media(max-width:520px){.summary{grid-template-columns:1fr}.drop-zone{min-height:220px;padding:24px}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header><h1>PhotoLocation Grouper</h1><p class="subtitle">Drop photos or a folder, cluster by 90-meter GPS groups, cluster no-GPS photos by capture time, convert uploads to JPG for ZIP export, create professional engineering-style callouts, and export location folders or a compressed Word report.</p></header>
+    <label id="dropZone" class="drop-zone">
+      <input id="fileInput" class="hidden-input" type="file" accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple />
+      <input id="directoryInput" class="hidden-input" type="file" accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple webkitdirectory directory />
+      <div><div class="drop-icon">⌖</div><p class="drop-title">Drag & drop photos here</p><p class="drop-text">JPG, PNG, WEBP, HEIC, or an entire photo directory. ZIP output is JPG.</p><div class="drop-actions"><button id="selectFilesBtn" class="secondary-btn" type="button">Select Photos</button><button id="selectFolderBtn" class="secondary-btn" type="button">Select Folder</button></div></div>
+    </label>
+    <div class="toolbar"><div id="statusCard" class="status-card"><div class="spinner"></div><span id="statusText">No photos loaded.</span></div><div class="drop-actions"><button id="downloadBtn" disabled>Download ZIP</button><button id="downloadDocBtn" disabled>Download Word Document</button></div></div>
+    <section class="summary"><div class="metric"><strong id="totalCount">0</strong><span>Total photos</span></div><div class="metric"><strong id="gpsCount">0</strong><span>With GPS</span></div><div class="metric"><strong id="missingGpsCount">0</strong><span>Missing GPS</span></div><div class="metric"><strong id="annotatedCount">0</strong><span>Annotated</span></div><div class="metric"><strong id="groupCount">0</strong><span>Groups</span></div></section>
+    <h2 class="section-title">Photo Preview</h2><section id="previewGrid" class="preview-grid"><div class="empty">Imported photos will appear here.</div></section>
+    <h2 class="section-title">Grouped Results</h2><section id="groupsContainer" class="groups"><div class="empty">Location groups will appear after processing.</div></section>
+  </main>
+  <div id="annotationModal" class="modal" aria-hidden="true"><div class="modal-card"><div class="modal-head"><div><div id="modalTitle" class="modal-title">Annotate Photo</div><div id="modalSubTitle" class="modal-sub"></div></div><div class="marker-tools"><div id="markerPalette" class="marker-palette"></div><button id="undoMarkerBtn" class="secondary-btn" type="button">Undo</button><button id="closeModalBtn" class="secondary-btn" type="button">Close</button></div></div><div class="canvas-wrap"><canvas id="annotationCanvas"></canvas></div><div class="modal-foot"><div class="hint">Select a marker type, then click the photo. Markers are saved automatically and included in the Word export.</div><button id="saveAnnotationBtn" type="button">Done</button></div></div></div>
+<script>
+(function(){
+  const CLUSTER_RADIUS_METERS = 90;
+  const MISSING_GPS_TIME_BUCKET_MINUTES = 30;
+  const NOMINATIM_DELAY_MS = 1100;
+  const $ = id => document.getElementById(id);
+  const dropZone = $("dropZone"), fileInput = $("fileInput"), directoryInput = $("directoryInput"), selectFilesBtn = $("selectFilesBtn"), selectFolderBtn = $("selectFolderBtn"), statusCard = $("statusCard"), statusText = $("statusText"), previewGrid = $("previewGrid"), groupsContainer = $("groupsContainer"), downloadBtn = $("downloadBtn"), downloadDocBtn = $("downloadDocBtn");
+  const totalCount = $("totalCount"), gpsCount = $("gpsCount"), missingGpsCount = $("missingGpsCount"), annotatedCount = $("annotatedCount"), groupCount = $("groupCount");
+  const annotationModal = $("annotationModal"), modalTitle = $("modalTitle"), modalSubTitle = $("modalSubTitle"), canvas = $("annotationCanvas"), ctx = canvas.getContext("2d"), markerPalette = $("markerPalette"), undoMarkerBtn = $("undoMarkerBtn"), closeModalBtn = $("closeModalBtn"), saveAnnotationBtn = $("saveAnnotationBtn");
+  let photos = [], groups = new Map(), seenFiles = new Set(), locationCache = new Map(), activePhoto = null, activeImage = null;
+  const MARKER_OPTIONS = [
+    { id:"electric_station_120_20", symbol:"P20", category:"POWER", icon:"power", label:"120 VAC / 20A Station", color:"#b91c1c", textColor:"#fff", strokeColor:"#7f1d1d" },
+    { id:"electric_rf_120_15", symbol:"P15", category:"POWER", icon:"power", label:"120 VAC / 15A RF", color:"#b91c1c", textColor:"#fff", strokeColor:"#7f1d1d" },
+    { id:"electric_guardian_208_30", symbol:"P30", category:"POWER", icon:"power", label:"208 VAC / 30A Guardian", color:"#b91c1c", textColor:"#fff", strokeColor:"#7f1d1d" },
+    { id:"ethernet_rj45_50", symbol:"RJ50", category:"DATA", icon:"ethernet", label:"RJ45 / 50 Mbps", color:"#b7791f", textColor:"#111827", strokeColor:"#7c4a03" },
+    { id:"ethernet_rj45_25", symbol:"RJ25", category:"DATA", icon:"ethernet", label:"RJ45 / 25 Mbps", color:"#b7791f", textColor:"#111827", strokeColor:"#7c4a03" },
+    { id:"mount_unistrut", symbol:"UNI", category:"MOUNT", icon:"mount", label:"Unistrut", color:"#475569", textColor:"#fff", strokeColor:"#1f2937" },
+    { id:"rf_tower", symbol:"RF-T", category:"RF", icon:"rf", label:"Tower antenna path", color:"#1d4ed8", textColor:"#fff", strokeColor:"#1e3a8a" },
+    { id:"rf_non_pen", symbol:"RF-N", category:"RF", icon:"rf", label:"Non-penetrating mount", color:"#1d4ed8", textColor:"#fff", strokeColor:"#1e3a8a" },
+    { id:"rf_pen", symbol:"RF-P", category:"RF", icon:"rf", label:"Penetrating mount", color:"#1d4ed8", textColor:"#fff", strokeColor:"#1e3a8a" }
+  ];
+  const MARKUP_FONT = '"Aptos","IBM Plex Sans","Segoe UI",Arial,sans-serif';
+  let activeMarkerType = MARKER_OPTIONS[0].id;
+
+  selectFilesBtn.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); fileInput.click(); });
+  selectFolderBtn.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); directoryInput.click(); });
+  fileInput.addEventListener("change", e => { handleFiles(Array.from(e.target.files || [])); fileInput.value = ""; });
+  directoryInput.addEventListener("change", e => { handleFiles(Array.from(e.target.files || [])); directoryInput.value = ""; });
+  dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("dragover"); });
+  dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+  dropZone.addEventListener("drop", async e => { e.preventDefault(); dropZone.classList.remove("dragover"); handleFiles(await getFilesFromDrop(e.dataTransfer)); });
+  downloadBtn.addEventListener("click", downloadZip);
+  downloadDocBtn.addEventListener("click", downloadWordDocument);
+  closeModalBtn.addEventListener("click", closeAnnotationModal);
+  saveAnnotationBtn.addEventListener("click", () => { closeAnnotationModal(); render(); });
+  undoMarkerBtn.addEventListener("click", () => { if(activePhoto){ activePhoto.markers.pop(); drawAnnotationCanvas(); render(); } });
+  annotationModal.addEventListener("click", e => { if(e.target === annotationModal) closeAnnotationModal(); });
+  document.addEventListener("keydown", e => { if(e.key === "Escape") closeAnnotationModal(); });
+  canvas.addEventListener("click", e => {
+    if(!activePhoto || !activeImage) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    activePhoto.markers.push({ type: activeMarkerType, x: clamp(x,.02,.98), y: clamp(y,.02,.98) });
+    drawAnnotationCanvas(); render();
+  });
+  renderMarkerPalette(); render();
+
+  async function handleFiles(files){
+    try{
+      const imageFiles = files.filter(isSupportedImage);
+      if(!imageFiles.length){ setStatus("No supported image files found.", false); return; }
+      setStatus(`Preparing ${imageFiles.length} image${imageFiles.length===1?"":"s"}...`, true);
+      for(let i=0;i<imageFiles.length;i++){
+        const file = imageFiles[i];
+        let duplicateKey = `${file.name}-${file.size}-${file.lastModified}`;
+        try{ duplicateKey = await getFileKey(file); }catch{}
+        if(seenFiles.has(duplicateKey)) continue;
+        seenFiles.add(duplicateKey);
+        setStatus(`Processing image ${i+1} of ${imageFiles.length}: ${file.name}`, true);
+        let photo;
+        try{ photo = await processPhoto(file); }
+        catch(err){ console.error("Image processing failed", file.name, err); photo = makeFallbackPhoto(file, `Could not process image. ${err && err.message ? err.message : ""}`.trim()); }
+        photos.push(photo);
+        try{ await placePhotoIntoGroup(photo); }
+        catch(err){ console.error("Grouping/geocoding failed", file.name, err); placeMissingGpsPhoto(photo); photo.warning = appendWarning(photo.warning, "Location lookup failed; grouped by time."); }
+        render();
+        await idlePause();
+      }
+      setStatus(`Processed ${photos.length} photo${photos.length===1?"":"s"}.`, false);
+      updateButtons();
+    }catch(err){ console.error(err); setStatus(`Processing stopped: ${err && err.message ? err.message : "Unknown error"}`, false); updateButtons(); }
+  }
+
+  function isSupportedImage(file){ return (file.type && file.type.startsWith("image/")) || /\.(jpe?g|png|webp|heic|heif)$/i.test(file.name || ""); }
+
+  function isHeicFile(file){
+    const name = (file && file.name ? file.name : "").toLowerCase();
+    const type = (file && file.type ? file.type : "").toLowerCase();
+    return type === "image/heic" || type === "image/heif" || name.endsWith(".heic") || name.endsWith(".heif");
+  }
+
+  function isJpegFile(file){
+    const name = (file && file.name ? file.name : "").toLowerCase();
+    const type = (file && file.type ? file.type : "").toLowerCase();
+    return type === "image/jpeg" || name.endsWith(".jpg") || name.endsWith(".jpeg");
+  }
+
+  async function processPhoto(file){
+    const heic = isHeicFile(file);
+    const exif = await readExifSafe(file);
+    let previewSource = file, exportFile = file, exportFileName = file.name, conversionWarning = "";
+    try{
+      exportFile = await convertImageToJpeg(file);
+      exportFileName = replaceFileExtension(file.name,".jpg");
+      previewSource = exportFile;
+      conversionWarning = heic ? "HEIC converted to JPG in-browser for preview/export." : "";
+    }catch(err){
+      console.warn("JPG conversion failed", file.name, err);
+      exportFile = file;
+      exportFileName = file.name;
+      if(heic){
+        previewSource = await canBrowserPreviewFile(file) ? file : await makeHeicPlaceholder(file);
+        conversionWarning = "HEIC to JPG conversion failed. Original HEIC retained as fallback.";
+      }else{
+        previewSource = file;
+        conversionWarning = "JPG conversion failed. Original file retained as fallback.";
+      }
+    }
+    const previewUrl = URL.createObjectURL(previewSource);
+    const capturedAt = exif.capturedAt || (file.lastModified ? new Date(file.lastModified) : new Date());
+    const noGpsWarning = exif.gps ? "" : "No GPS data found. Clustered by capture time.";
+    return { id: makeId(), file, exportFile, fileName:file.name, exportFileName, relativePath:file.webkitRelativePath || file.name, previewUrl, lat:exif.gps ? exif.gps.lat : null, lon:exif.gps ? exif.gps.lon : null, capturedAt, groupName:"Pending", address:"", placeName:"", city:"", county:"", state:"", warning:[conversionWarning,noGpsWarning].filter(Boolean).join(" "), markers:[] };
+  }
+
+  function makeFallbackPhoto(file, warning){ return { id:makeId(), file, exportFile:file, fileName:file.name, exportFileName:file.name, relativePath:file.webkitRelativePath || file.name, previewUrl:URL.createObjectURL(file), lat:null, lon:null, capturedAt:file.lastModified ? new Date(file.lastModified) : new Date(), groupName:"Pending", address:"", placeName:"", city:"", county:"", state:"", warning:warning || "Could not process image metadata.", markers:[] }; }
+
+  async function readExifSafe(file){
+    const fallback = { gps:null, capturedAt:file.lastModified ? new Date(file.lastModified) : null };
+    let capturedAt = fallback.capturedAt;
+
+    if(window.exifr){
+      try{
+        const parsed = await window.exifr.parse(file, {
+          gps:true,
+          tiff:true,
+          exif:true,
+          ifd0:true,
+          pick:["latitude","longitude","GPSLatitude","GPSLongitude","GPSLatitudeRef","GPSLongitudeRef","DateTimeOriginal","CreateDate","ModifyDate","DateTime"]
+        });
+        if(parsed){
+          const lat = parseCoordinateValue(parsed.latitude ?? parsed.GPSLatitude, parsed.GPSLatitudeRef);
+          const lon = parseCoordinateValue(parsed.longitude ?? parsed.GPSLongitude, parsed.GPSLongitudeRef);
+          const dt = parsed.DateTimeOriginal || parsed.CreateDate || parsed.ModifyDate || parsed.DateTime;
+          capturedAt = dt instanceof Date ? dt : (typeof dt === "string" ? parseExifDate(dt) : capturedAt);
+          if(Number.isFinite(lat) && Number.isFinite(lon)) return { gps:{lat, lon}, capturedAt };
+        }
+      }catch(err){ console.warn("exifr metadata read failed", err); }
+    }
+
+    if(window.ExifReader){
+      try{
+        const tags = await window.ExifReader.load(file, { expanded:false, computed:true });
+        const readerDate = readExifReaderDate(tags);
+        if(readerDate) capturedAt = readerDate;
+        const gps = readExifReaderGps(tags);
+        if(gps) return { gps, capturedAt };
+      }catch(err){ console.warn("ExifReader metadata read failed", err); }
+    }
+
+    if(!window.EXIF || isHeicFile(file)) return { gps:null, capturedAt };
+
+    return new Promise(resolve => {
+      try{
+        EXIF.getData(file, function(){
+          try{
+            const lat = EXIF.getTag(this,"GPSLatitude"), lon = EXIF.getTag(this,"GPSLongitude"), latRef = EXIF.getTag(this,"GPSLatitudeRef") || "N", lonRef = EXIF.getTag(this,"GPSLongitudeRef") || "E";
+            const dt = EXIF.getTag(this,"DateTimeOriginal") || EXIF.getTag(this,"DateTimeDigitized") || EXIF.getTag(this,"DateTime");
+            const gps = lat && lon ? { lat:convertDmsToDecimal(lat,latRef), lon:convertDmsToDecimal(lon,lonRef) } : null;
+            resolve({ gps, capturedAt:parseExifDate(dt) || capturedAt });
+          }catch{ resolve({ gps:null, capturedAt }); }
+        });
+      }catch{ resolve({ gps:null, capturedAt }); }
+    });
+  }
+
+  async function placePhotoIntoGroup(photo){
+    if(!Number.isFinite(photo.lat) || !Number.isFinite(photo.lon)){ placeMissingGpsPhoto(photo); return; }
+    const nearby = findNearbyGroup(photo.lat, photo.lon);
+    if(nearby){
+      Object.assign(photo,{groupName:nearby.name,address:nearby.address,placeName:nearby.placeName,city:nearby.city,county:nearby.county,state:nearby.state});
+      nearby.photos.push(photo); updateCentroid(nearby); return;
+    }
+    const location = await reverseGeocode(photo.lat, photo.lon);
+    const group = { id:`gps-${photo.id}`, type:"gps", name:location.folderName, address:location.addressLine, placeName:location.placeName, city:location.city, county:location.county, state:location.state, centroidLat:photo.lat, centroidLon:photo.lon, photos:[photo] };
+    Object.assign(photo,{groupName:group.name,address:group.address,placeName:group.placeName,city:group.city,county:group.county,state:group.state});
+    groups.set(group.id, group);
+  }
+
+  function placeMissingGpsPhoto(photo){
+    const bucket = makeTimeBucket(photo.capturedAt);
+    const key = `time-${bucket}`;
+    if(!groups.has(key)) groups.set(key,{ id:key, type:"time", name:sanitizeFolderName(`No_GPS_${bucket}`), address:"No GPS data", placeName:"Clustered by capture time", city:"", county:"", state:"", centroidLat:null, centroidLon:null, photos:[] });
+    const group = groups.get(key); photo.groupName = group.name; photo.address = group.address; photo.placeName = group.placeName; group.photos.push(photo);
+  }
+
+  function findNearbyGroup(lat,lon){ for(const g of groups.values()){ if(g.type !== "gps") continue; if(distanceInMeters(lat,lon,g.centroidLat,g.centroidLon) <= CLUSTER_RADIUS_METERS) return g; } return null; }
+  function updateCentroid(group){ const gps = group.photos.filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon)); if(!gps.length) return; group.centroidLat = gps.reduce((s,p)=>s+p.lat,0)/gps.length; group.centroidLon = gps.reduce((s,p)=>s+p.lon,0)/gps.length; }
+
+  async function reverseGeocode(lat,lon){
+    const cacheKey = `${lat.toFixed(4)},${lon.toFixed(4)}`; if(locationCache.has(cacheKey)) return locationCache.get(cacheKey);
+    await sleep(NOMINATIM_DELAY_MS);
+    const fallback = { folderName:sanitizeFolderName(`Lat_${lat.toFixed(5)}_Lon_${lon.toFixed(5)}`), addressLine:`${lat.toFixed(5)}, ${lon.toFixed(5)}`, placeName:"Nearest identified location", city:"", county:"", state:"" };
+    try{
+      const url = `https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&namedetails=1&extratags=1&zoom=18&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`;
+      const res = await fetch(url,{headers:{Accept:"application/json"}}); if(!res.ok) throw new Error("Reverse geocoding failed");
+      const data = await res.json(), a = data.address || {}, nd = data.namedetails || {}, ex = data.extratags || {};
+      const house = a.house_number || "", road = a.road || a.pedestrian || a.footway || a.service || "";
+      const city = a.city || a.town || a.village || a.hamlet || a.suburb || a.municipality || "";
+      const county = a.county || a.parish || "";
+      const state = a.state_code || abbreviateState(a.state || a.region || a.province || "");
+      const placeName = nd.name || data.name || a.amenity || a.office || a.public_building || a.building || ex.operator || ex.brand || "Nearest identified location";
+      const addressLine = [house,road].filter(Boolean).join(" ") || [city,county,state].filter(Boolean).join(" ") || fallback.addressLine;
+      const folderName = sanitizeFolderName([addressLine, city, state, placeName].filter(Boolean).join("_")) || fallback.folderName;
+      const result = { folderName, addressLine, placeName, city, county, state }; locationCache.set(cacheKey,result); return result;
+    }catch(err){ console.warn(err); locationCache.set(cacheKey,fallback); return fallback; }
+  }
+
+  function render(){ renderMetrics(); renderPreviews(); renderGroups(); updateButtons(); }
+  function renderMetrics(){ const withGps = photos.filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon)).length; totalCount.textContent=photos.length; gpsCount.textContent=withGps; missingGpsCount.textContent=photos.length-withGps; annotatedCount.textContent=photos.filter(p=>p.markers.length).length; groupCount.textContent=groups.size; }
+  function renderPreviews(){ if(!photos.length){ previewGrid.innerHTML='<div class="empty">Imported photos will appear here.</div>'; return; } previewGrid.innerHTML = photos.map(renderPhotoCard).join(""); bindAnnotateButtons(previewGrid); }
+  function renderGroups(){ const sorted = getSortedGroups(); if(!sorted.length){ groupsContainer.innerHTML='<div class="empty">Location groups will appear after processing.</div>'; return; } groupsContainer.innerHTML = sorted.map(g=>`<article class="group"><h3>${escapeHtml(g.name)}<span>${g.photos.length} photo${g.photos.length===1?"":"s"}</span></h3><p class="group-sub">${escapeHtml([g.address,g.placeName].filter(Boolean).join(" | ") || "Unknown location")}</p><div class="group-grid">${g.photos.map(renderPhotoCard).join("")}</div></article>`).join(""); bindAnnotateButtons(groupsContainer); }
+  function renderPhotoCard(p){ return `<article class="photo-card"><img class="thumb" src="${p.previewUrl}" alt="${escapeHtml(p.fileName)}" loading="lazy"><div class="photo-meta"><span class="photo-name" title="${escapeHtml(p.relativePath || p.fileName)}">${escapeHtml(p.fileName)}</span><div class="photo-location">${escapeHtml(p.groupName || "Ungrouped")}</div>${p.markers.length?`<div class="photo-location">${p.markers.length} marker${p.markers.length===1?"":"s"}</div>`:""}${p.warning?`<div class="warning">${escapeHtml(p.warning)}</div>`:""}<button class="secondary-btn annotate-btn" type="button" data-annotate-id="${p.id}">Annotate</button></div></article>`; }
+  function bindAnnotateButtons(root){ root.querySelectorAll("[data-annotate-id]").forEach(btn=>btn.addEventListener("click",()=>openAnnotationModal(btn.dataset.annotateId))); }
+  function getSortedGroups(){ return Array.from(groups.values()).sort((a,b)=>{ if(a.type!==b.type) return a.type==="gps"?-1:1; return a.name.localeCompare(b.name); }); }
+
+  function renderMarkerPalette(){ markerPalette.innerHTML = MARKER_OPTIONS.map(o=>`<button class="tool-btn ${o.id===activeMarkerType?"active":""}" type="button" data-marker-id="${o.id}"><span class="tool-symbol" style="color:${o.color};border-color:${o.color}">${escapeHtml(o.symbol)}</span><span class="tool-text"><strong>${escapeHtml(o.category)}</strong><span>${escapeHtml(o.label)}</span></span></button>`).join(""); markerPalette.querySelectorAll("[data-marker-id]").forEach(b=>b.addEventListener("click",()=>{ activeMarkerType=b.dataset.markerId; renderMarkerPalette(); })); }
+  function openAnnotationModal(photoId){ activePhoto = photos.find(p=>p.id===photoId); if(!activePhoto) return; modalTitle.textContent = `Annotate: ${activePhoto.fileName}`; modalSubTitle.textContent = activePhoto.groupName || "Ungrouped"; activeImage = new Image(); activeImage.onload = () => { const maxWidth=1400, scale=Math.min(1,maxWidth/activeImage.naturalWidth); canvas.width=Math.max(1,Math.round(activeImage.naturalWidth*scale)); canvas.height=Math.max(1,Math.round(activeImage.naturalHeight*scale)); annotationModal.classList.add("open"); annotationModal.setAttribute("aria-hidden","false"); drawAnnotationCanvas(); }; activeImage.onerror = () => setStatus("Could not open this image for annotation.", false); activeImage.src = activePhoto.previewUrl; }
+  function closeAnnotationModal(){ annotationModal.classList.remove("open"); annotationModal.setAttribute("aria-hidden","true"); activePhoto=null; activeImage=null; }
+  function drawAnnotationCanvas(targetCanvas=canvas, image=activeImage, photo=activePhoto){ if(!image || !photo) return; const c=targetCanvas.getContext("2d"); c.clearRect(0,0,targetCanvas.width,targetCanvas.height); c.drawImage(image,0,0,targetCanvas.width,targetCanvas.height); photo.markers.forEach(m=>drawMarker(c,m,targetCanvas.width,targetCanvas.height)); }
+  function drawMarker(c,m,w,h){
+    const o=getMarkerOption(m.type), x=m.x*w, y=m.y*h;
+    const scale=Math.max(.85,Math.min(2,w/1100));
+    const pinR=Math.max(17,Math.round(w*.017));
+    const lineW=Math.max(2,Math.round(w*.0032));
+    const labelFont=Math.max(15,Math.round(w*.0155));
+    const codeFont=Math.max(14,Math.round(w*.014));
+    const padX=Math.round(labelFont*.75), padY=Math.round(labelFont*.45);
+    const maxBW=Math.min(Math.round(w*.46),430), minBW=Math.min(maxBW,Math.max(210,Math.round(w*.22)));
+    c.save();
+    c.font=`850 ${labelFont}px ${MARKUP_FONT}`;
+    const labelLines=wrapCanvasText(c,`${o.category} · ${o.label}`,maxBW-padX*2);
+    const lh=Math.round(labelFont*1.25);
+    c.font=`950 ${codeFont}px ${MARKUP_FONT}`;
+    const widestLabel=Math.max(...labelLines.map(line=>c.measureText(line).width));
+    const bw=Math.min(maxBW,Math.max(minBW,widestLabel+padX*2));
+    const headerH=Math.round(codeFont*2.05), bodyH=labelLines.length*lh+padY*2, bh=headerH+bodyH;
+    let bx=x+pinR+Math.round(34*scale), by=y-bh-Math.round(18*scale);
+    if(bx+bw>w-12) bx=x-pinR-Math.round(34*scale)-bw;
+    if(by<12) by=y+pinR+Math.round(26*scale);
+    if(by+bh>h-12) by=Math.max(12,h-bh-12);
+    const attachX=bx>x ? bx : bx+bw;
+    const attachY=clamp(y,by+12,by+bh-12);
+
+    c.lineWidth=lineW;
+    c.strokeStyle=o.color;
+    c.setLineDash([Math.round(8*scale),Math.round(5*scale)]);
+    c.beginPath(); c.moveTo(x,y); c.lineTo(attachX,attachY); c.stroke();
+    c.setLineDash([]);
+
+    c.shadowColor="rgba(15,23,42,.18)"; c.shadowBlur=Math.round(12*scale); c.shadowOffsetY=Math.round(5*scale);
+    c.fillStyle="rgba(255,255,255,.96)"; c.strokeStyle="#334155";
+    roundedRect(c,bx,by,bw,bh,Math.round(13*scale)); c.fill(); c.stroke();
+    c.shadowColor="transparent"; c.shadowBlur=0; c.shadowOffsetY=0;
+
+    c.fillStyle=o.color; c.strokeStyle=o.strokeColor;
+    roundedRect(c,bx,by,bw,headerH,Math.round(13*scale)); c.fill();
+    c.fillStyle=o.textColor; c.textBaseline="middle"; c.textAlign="left"; c.font=`950 ${codeFont}px ${MARKUP_FONT}`;
+    c.fillText(o.symbol,bx+padX,by+headerH/2+1);
+    c.font=`800 ${Math.max(11,Math.round(codeFont*.72))}px ${MARKUP_FONT}`; c.textAlign="right";
+    c.fillText(o.category,bx+bw-padX,by+headerH/2+1);
+
+    c.textAlign="left"; c.textBaseline="top"; c.fillStyle="#172033"; c.font=`850 ${labelFont}px ${MARKUP_FONT}`;
+    labelLines.forEach((line,i)=>c.fillText(line,bx+padX,by+headerH+padY+i*lh));
+
+    c.fillStyle="rgba(255,255,255,.96)"; c.strokeStyle=o.color; c.lineWidth=lineW;
+    c.beginPath(); c.arc(x,y,pinR,0,Math.PI*2); c.fill(); c.stroke();
+    c.strokeStyle="#0f172a"; c.lineWidth=Math.max(1.5,lineW*.72); c.beginPath(); c.moveTo(x-pinR*1.45,y); c.lineTo(x+pinR*1.45,y); c.moveTo(x,y-pinR*1.45); c.lineTo(x,y+pinR*1.45); c.stroke();
+    drawMarkerIcon(c,o,x,y,pinR*.72);
+    c.restore();
+  }
+  function drawMarkerIcon(c,o,x,y,r){
+    c.save(); c.lineCap="round"; c.lineJoin="round"; c.strokeStyle=o.color; c.fillStyle=o.color; c.lineWidth=Math.max(2,r*.18);
+    if(o.icon==="power"){
+      c.beginPath(); c.moveTo(x-r*.18,y-r*.75); c.lineTo(x-r*.62,y+r*.05); c.lineTo(x-r*.12,y+r*.05); c.lineTo(x-r*.32,y+r*.78); c.lineTo(x+r*.55,y-r*.18); c.lineTo(x+r*.08,y-r*.18); c.closePath(); c.fill();
+    }else if(o.icon==="ethernet"){
+      c.strokeRect(x-r*.68,y-r*.38,r*1.36,r*.92); c.beginPath(); c.moveTo(x-r*.36,y-r*.38); c.lineTo(x-r*.36,y-r*.66); c.lineTo(x+r*.36,y-r*.66); c.lineTo(x+r*.36,y-r*.38); c.stroke();
+      for(let i=-2;i<=2;i++){ c.beginPath(); c.moveTo(x+i*r*.22,y+r*.54); c.lineTo(x+i*r*.22,y+r*.76); c.stroke(); }
+    }else if(o.icon==="mount"){
+      c.lineWidth=Math.max(2,r*.22); c.beginPath(); c.moveTo(x-r*.72,y-r*.42); c.lineTo(x+r*.72,y-r*.42); c.moveTo(x-r*.72,y+r*.42); c.lineTo(x+r*.72,y+r*.42); c.stroke();
+      c.fillStyle="#fff"; for(let i=-1;i<=1;i++){ c.beginPath(); c.arc(x+i*r*.48,y,r*.14,0,Math.PI*2); c.fill(); c.stroke(); }
+    }else{
+      c.beginPath(); c.moveTo(x,y+r*.68); c.lineTo(x,y-r*.52); c.moveTo(x-r*.42,y+r*.68); c.lineTo(x+r*.42,y+r*.68); c.stroke();
+      c.beginPath(); c.arc(x,y-r*.52,r*.45,Math.PI*1.15,Math.PI*1.85); c.stroke();
+      c.beginPath(); c.arc(x,y-r*.52,r*.72,Math.PI*1.05,Math.PI*1.95); c.stroke();
+    }
+    c.restore();
+  }
+  function getMarkerOption(type){ return MARKER_OPTIONS.find(o=>o.id===type) || MARKER_OPTIONS[0]; }
+  function wrapCanvasText(c,text,maxWidth){ const words=String(text).split(/\s+/), lines=[]; let line=""; for(const word of words){ const test=line?`${line} ${word}`:word; if(c.measureText(test).width<=maxWidth || !line) line=test; else{ lines.push(line); line=word; } } if(line) lines.push(line); return lines; }
+  function roundedRect(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
+  async function getAnnotatedImageDataUrl(photo,maxWidth=960,quality=.72){ const img=await loadImage(photo.previewUrl); const scale=Math.min(1,maxWidth/img.naturalWidth); const off=document.createElement("canvas"); off.width=Math.max(1,Math.round(img.naturalWidth*scale)); off.height=Math.max(1,Math.round(img.naturalHeight*scale)); drawAnnotationCanvas(off,img,photo); return off.toDataURL("image/jpeg",quality); }
+  function loadImage(src){ return new Promise((resolve,reject)=>{ const img=new Image(); img.onload=()=>resolve(img); img.onerror=reject; img.src=src; }); }
+
+  async function downloadZip(){ if(!photos.length) return; setStatus("Building ZIP file...",true); downloadBtn.disabled=true; downloadDocBtn.disabled=true; try{ const zip=new JSZip(); for(const g of getSortedGroups()){ const folder=zip.folder(g.name || "Unknown_Location"), used=new Set(); for(const p of g.photos){ const base=sanitizeFileName(p.exportFileName || p.fileName), safe=uniqueFileName(base,used); used.add(safe); folder.file(safe,p.exportFile || p.file); if(p.markers.length){ const ann=uniqueFileName(addSuffixToFileName(base,"_annotated",".jpg"),used); used.add(ann); folder.file(ann,dataUrlToUint8Array(await getAnnotatedImageDataUrl(p,1200,.78))); } await idlePause(); } } const blob=await zip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:6}},m=>setStatus(`Building ZIP file... ${Math.round(m.percent)}%`,true)); downloadBlob(blob,"Photos_By_Location.zip"); setStatus("ZIP download ready.",false); }catch(err){ console.error(err); setStatus("Could not create ZIP file.",false); }finally{ updateButtons(); } }
+
+  async function downloadWordDocument(){ const annotated=photos.filter(p=>p.markers.length); if(!annotated.length){ setStatus("Add at least one marker before exporting a Word document.",false); return; } if(!window.docx){ setStatus("Word export library failed to load. Check internet access and reload.",false); return; } setStatus("Building Word document...",true); downloadBtn.disabled=true; downloadDocBtn.disabled=true; try{ const {Document,Packer,Paragraph,TextRun,ImageRun,HeadingLevel,AlignmentType,PageBreak}=window.docx; const sorted=getSortedGroups().filter(g=>g.photos.some(p=>p.markers.length)); const children=[new Paragraph({text:"Photo Annotation Report",heading:HeadingLevel.TITLE}),new Paragraph({children:[new TextRun({text:buildDocumentLocationTitle(sorted),bold:true,size:28})]}),new Paragraph({children:[new TextRun({text:"Images are compressed for screen viewing at approximately 96 DPI to reduce document size.",italics:true})]}),new Paragraph({children:[new TextRun({text:`Generated ${new Date().toLocaleString()}`,italics:true})]}),new Paragraph({text:" "})]; let idx=0; for(let gi=0;gi<sorted.length;gi++){ const g=sorted[gi], imgs=g.photos.filter(p=>p.markers.length).sort((a,b)=>a.capturedAt-b.capturedAt); children.push(new Paragraph({text:g.name || "Unknown Location",heading:HeadingLevel.HEADING_1})); children.push(new Paragraph({children:[new TextRun({text:"City / County / Parish: ",bold:true}),new TextRun(buildGroupJurisdiction(g))]})); children.push(new Paragraph({children:[new TextRun({text:"Address / Building: ",bold:true}),new TextRun([g.address,g.placeName].filter(Boolean).join(" | ") || "Unknown")]})); children.push(new Paragraph({text:" "})); for(let pi=0;pi<imgs.length;pi++){ const p=imgs[pi]; idx++; setStatus(`Adding annotated image ${idx} of ${annotated.length}...`,true); const dataUrl=await getAnnotatedImageDataUrl(p,960,.72), bytes=dataUrlToUint8Array(dataUrl), img=await loadImage(dataUrl), maxW=576, ratio=Math.min(1,maxW/img.naturalWidth), width=Math.round(img.naturalWidth*ratio), height=Math.round(img.naturalHeight*ratio); children.push(new Paragraph({text:p.fileName,heading:HeadingLevel.HEADING_2})); children.push(new Paragraph({children:[new TextRun({text:"Captured: ",bold:true}),new TextRun(formatDateForDisplay(p.capturedAt))]})); if(Number.isFinite(p.lat)&&Number.isFinite(p.lon)) children.push(new Paragraph({children:[new TextRun({text:"GPS: ",bold:true}),new TextRun(`${p.lat.toFixed(6)}, ${p.lon.toFixed(6)}`)]})); children.push(new Paragraph({children:[new TextRun({text:"Markers: ",bold:true}),new TextRun(p.markers.map((m,i)=>`${i+1}. ${getMarkerOption(m.type).symbol} ${getMarkerOption(m.type).label}`).join("; "))]})); children.push(new Paragraph({text:" "})); children.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:bytes,transformation:{width,height}})]})); if(!(gi===sorted.length-1 && pi===imgs.length-1)) children.push(new Paragraph({children:[new PageBreak()]})); await idlePause(); } } const doc=new Document({creator:"PhotoLocation Grouper",title:"Photo Annotation Report",description:"Annotated photo report generated in browser.",sections:[{properties:{page:{margin:{top:720,right:720,bottom:720,left:720}}},children}]}); const blob=await Packer.toBlob(doc); downloadBlob(blob,"Annotated_Photos.docx"); setStatus("Word document download ready.",false); }catch(err){ console.error(err); setStatus("Could not create Word document.",false); }finally{ updateButtons(); } }
+
+  async function getFilesFromDrop(dataTransfer){
+    const files=[];
+    if(dataTransfer.items && dataTransfer.items.length){
+      const entries=Array.from(dataTransfer.items).map(item=>item.webkitGetAsEntry && item.webkitGetAsEntry()).filter(Boolean);
+      if(entries.length){ for(const entry of entries) files.push(...await readEntry(entry)); return files; }
+    }
+    return Array.from(dataTransfer.files || []);
+  }
+  function readEntry(entry){ return new Promise(resolve=>{ if(entry.isFile){ entry.file(file=>resolve([file]),()=>resolve([])); } else if(entry.isDirectory){ const reader=entry.createReader(), all=[]; const readBatch=()=>reader.readEntries(async entries=>{ if(!entries.length){ resolve(all); return; } for(const ent of entries) all.push(...await readEntry(ent)); readBatch(); },()=>resolve(all)); readBatch(); } else resolve([]); }); }
+  async function canBrowserPreviewFile(file){ const url=URL.createObjectURL(file); try{ await loadImageWithTimeout(url,2200); return true; }catch{ return false; }finally{ URL.revokeObjectURL(url); } }
+  function loadImageWithTimeout(src,timeoutMs){ return new Promise((resolve,reject)=>{ const img=new Image(), timer=setTimeout(()=>{ cleanup(); reject(new Error("Image decode timed out")); },timeoutMs); function cleanup(){ clearTimeout(timer); img.onload=null; img.onerror=null; } img.onload=()=>{ cleanup(); resolve(img); }; img.onerror=()=>{ cleanup(); reject(new Error("Image decode failed")); }; img.src=src; }); }
+  async function convertImageToJpeg(file){
+    if(isHeicFile(file)) return decodeHeicToJpeg(file);
+    if(isJpegFile(file)) return file;
+    return convertRasterImageToJpeg(file,.9);
+  }
+  async function decodeHeicToJpeg(file){
+    let converted = null;
+    if(window.HeicTo){
+      converted = await window.HeicTo({ blob:file, type:"image/jpeg", quality:.86 });
+    }else if(window.heic2any){
+      converted = await window.heic2any({ blob:file, toType:"image/jpeg", quality:.86 });
+    }else{
+      throw new Error("HEIC decoder library not loaded");
+    }
+    const blob = Array.isArray(converted) ? converted[0] : converted;
+    return new File([blob],replaceFileExtension(file.name,".jpg"),{type:"image/jpeg",lastModified:file.lastModified || Date.now()});
+  }
+  async function convertRasterImageToJpeg(file,quality=.9){
+    const url=URL.createObjectURL(file);
+    try{
+      const img=await loadImageWithTimeout(url,20000);
+      const w=Math.max(1,img.naturalWidth || img.width || 1), h=Math.max(1,img.naturalHeight || img.height || 1);
+      const off=document.createElement("canvas"); off.width=w; off.height=h;
+      const c=off.getContext("2d"); c.fillStyle="#fff"; c.fillRect(0,0,w,h); c.drawImage(img,0,0,w,h);
+      const blob=await new Promise((resolve,reject)=>off.toBlob(b=>b?resolve(b):reject(new Error("JPEG encode failed")),"image/jpeg",quality));
+      return new File([blob],replaceFileExtension(file.name,".jpg"),{type:"image/jpeg",lastModified:file.lastModified || Date.now()});
+    }finally{ URL.revokeObjectURL(url); }
+  }
+  function convertHeicToJpeg(file){ return decodeHeicToJpeg(file); }
+  async function makeHeicPlaceholder(file){
+    const canvas=document.createElement("canvas"), w=900, h=680, ctx=canvas.getContext("2d");
+    canvas.width=w; canvas.height=h;
+    ctx.fillStyle="#f8fafc"; ctx.fillRect(0,0,w,h);
+    ctx.fillStyle="#e2e8f0"; ctx.fillRect(36,36,w-72,h-72);
+    ctx.fillStyle="#172033"; ctx.font="bold 42px system-ui, sans-serif"; ctx.textAlign="center"; ctx.fillText("HEIC Photo",w/2,h/2-42);
+    ctx.fillStyle="#697386"; ctx.font="24px system-ui, sans-serif"; ctx.fillText("Preview conversion unavailable in this browser",w/2,h/2+4);
+    ctx.font="20px system-ui, sans-serif"; ctx.fillText(file.name || "Original HEIC retained",w/2,h/2+42);
+    return new Promise(resolve=>canvas.toBlob(blob=>resolve(new File([blob],replaceFileExtension(file.name || "heic_preview",".jpg"),{type:"image/jpeg",lastModified:file.lastModified || Date.now()})),"image/jpeg",.82));
+  }
+  async function getFileKey(file){ const fallback=`${file.name}-${file.size}-${file.lastModified}`; if(!crypto.subtle) return fallback; const sample=await file.slice(0,Math.min(file.size,1024*1024)).arrayBuffer(); const digest=await crypto.subtle.digest("SHA-256",sample); const hash=Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,"0")).join(""); return `${hash}-${file.size}`; }
+  function convertDmsToDecimal(value,ref){ const d=numberFromExifRational(value[0]), m=numberFromExifRational(value[1]), s=numberFromExifRational(value[2]); let dec=d+m/60+s/3600; if(ref==="S" || ref==="W") dec*=-1; return dec; }
+  function numberFromExifRational(v){ if(typeof v==="number") return v; if(Array.isArray(v) && v.length>=2) return Number(v[0])/Number(v[1]); if(v && typeof v.numerator==="number" && typeof v.denominator==="number") return v.numerator/v.denominator; if(v && typeof v.value==="number") return v.value; return Number(v) || 0; }
+  function getExifReaderTag(tags,names){ return names.map(name=>tags && tags[name]).find(Boolean) || null; }
+  function getExifReaderValue(tag){ if(!tag) return null; if(tag.computed !== undefined) return tag.computed; if(tag.value !== undefined) return tag.value; if(tag.description !== undefined) return tag.description; return null; }
+  function readExifReaderGps(tags){ const latTag=getExifReaderTag(tags,["GPSLatitude","GPS Latitude"]), lonTag=getExifReaderTag(tags,["GPSLongitude","GPS Longitude"]); const latRef=getExifReaderValue(getExifReaderTag(tags,["GPSLatitudeRef","GPS Latitude Ref"])); const lonRef=getExifReaderValue(getExifReaderTag(tags,["GPSLongitudeRef","GPS Longitude Ref"])); const lat=parseCoordinateValue(getExifReaderValue(latTag) ?? (latTag && latTag.description), latRef); const lon=parseCoordinateValue(getExifReaderValue(lonTag) ?? (lonTag && lonTag.description), lonRef); return Number.isFinite(lat) && Number.isFinite(lon) && !(lat===0 && lon===0) ? {lat, lon} : null; }
+  function readExifReaderDate(tags){ const tag=getExifReaderTag(tags,["DateTimeOriginal","CreateDate","ModifyDate","DateTime","Date Time Original","Create Date","Modify Date"]); const raw=getExifReaderValue(tag); if(raw instanceof Date) return raw; const value=Array.isArray(raw) ? raw[0] : raw; return parseExifDate(String(value || "")) || parseLooseDate(String(value || "")); }
+  function parseCoordinateValue(value,ref){ if(value === null || value === undefined) return NaN; if(typeof value === "number") return applyCoordinateRef(value,ref); if(Array.isArray(value)){ if(value.length >= 3){ const dec=numberFromExifRational(value[0])+numberFromExifRational(value[1])/60+numberFromExifRational(value[2])/3600; return applyCoordinateRef(dec,ref); } if(value.length === 1) return applyCoordinateRef(numberFromExifRational(value[0]),ref); } const text=String(value); const nums=(text.match(/-?\d+(?:\.\d+)?/g) || []).map(Number); if(!nums.length) return NaN; let dec=nums[0]; if(nums.length >= 3 && /deg|degrees|degree|[\u00b0'"]/i.test(text)) dec=Math.abs(nums[0])+nums[1]/60+nums[2]/3600; if(/[Ss]|south/i.test(text)) dec=-Math.abs(dec); if(/[Ww]|west/i.test(text)) dec=-Math.abs(dec); return applyCoordinateRef(dec,ref); }
+  function applyCoordinateRef(value,ref){ const r=String(ref || ""); if(/[Ss]|south/i.test(r)) return -Math.abs(value); if(/[Ww]|west/i.test(r)) return -Math.abs(value); return value; }
+  function parseLooseDate(value){ const normalized=String(value || "").replace(/^(\d{4}):(\d{2}):(\d{2})/,"$1-$2-$3"); const d=new Date(normalized); return Number.isNaN(d.getTime()) ? null : d; }
+  function parseExifDate(value){ if(!value || typeof value!=="string") return null; const m=value.match(/^(\d{4}):(\d{2}):(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/); if(!m) return null; const d=new Date(Number(m[1]),Number(m[2])-1,Number(m[3]),Number(m[4]),Number(m[5]),Number(m[6])); return Number.isNaN(d.getTime()) ? null : d; }
+  function makeTimeBucket(date){ const d=date instanceof Date && !Number.isNaN(date.getTime()) ? date : new Date(); const bucketMs=MISSING_GPS_TIME_BUCKET_MINUTES*60*1000; const b=new Date(Math.floor(d.getTime()/bucketMs)*bucketMs); const pad=n=>String(n).padStart(2,"0"); return `${b.getFullYear()}-${pad(b.getMonth()+1)}-${pad(b.getDate())}_${pad(b.getHours())}-${pad(b.getMinutes())}`; }
+  function distanceInMeters(lat1,lon1,lat2,lon2){ const R=6371000, toRad=d=>d*Math.PI/180, dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1); const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2; return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
+  function buildDocumentLocationTitle(sorted){ const g=sorted.find(x=>x.type==="gps"); return g ? buildGroupJurisdiction(g) : "No GPS location available"; }
+  function buildGroupJurisdiction(g){ return [g.city || "Unknown City", g.county || "Unknown County/Parish", g.state || ""].filter(Boolean).join(", "); }
+  function dataUrlToUint8Array(dataUrl){ const base64=dataUrl.split(",")[1], bin=atob(base64), bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i); return bytes; }
+  function downloadBlob(blob,fileName){ const url=URL.createObjectURL(blob), a=document.createElement("a"); a.href=url; a.download=fileName; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
+  function uniqueFileName(fileName,used){ let candidate=fileName, i=2; const dot=fileName.lastIndexOf("."), base=dot>-1?fileName.slice(0,dot):fileName, ext=dot>-1?fileName.slice(dot):""; while(used.has(candidate)){ candidate=`${base}_${i}${ext}`; i++; } return candidate; }
+  function addSuffixToFileName(name,suffix,forceExt){ const dot=name.lastIndexOf("."), base=dot>-1?name.slice(0,dot):name, ext=forceExt || (dot>-1?name.slice(dot):""); return `${base}${suffix}${ext}`; }
+  function sanitizeFileName(name){ return String(name || "photo.jpg").trim().replace(/[<>:"/\\|?*\x00-\x1F]/g,"_").replace(/\s+/g,"_").slice(0,140) || `photo_${makeId()}.jpg`; }
+  function sanitizeFolderName(name){ return String(name || "Unknown_Location").trim().replace(/\s+/g,"_").replace(/[^a-zA-Z0-9_-]/g,"").replace(/_+/g,"_").replace(/^_+|_+$/g,"").slice(0,100) || "Unknown_Location"; }
+  function replaceFileExtension(name,ext){ return String(name).replace(/\.[^.]+$/,"") + ext; }
+  function appendWarning(a,b){ return [a,b].filter(Boolean).join(" "); }
+  function formatDateForDisplay(d){ return d instanceof Date && !Number.isNaN(d.getTime()) ? d.toLocaleString() : "Unknown"; }
+  function abbreviateState(state){ const map={"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY","District of Columbia":"DC"}; return map[state] || state; }
+  function setStatus(msg,processing){ statusText.textContent=msg; statusCard.classList.toggle("processing",!!processing); }
+  function updateButtons(){ downloadBtn.disabled=photos.length===0; downloadDocBtn.disabled=photos.filter(p=>p.markers.length).length===0; }
+  function escapeHtml(v){ return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+  function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+  function clamp(v,min,max){ return Math.min(max,Math.max(min,v)); }
+  function idlePause(){ return new Promise(resolve=>{ if("requestIdleCallback" in window) requestIdleCallback(()=>resolve(),{timeout:250}); else setTimeout(resolve,0); }); }
+  function makeId(){ return crypto.randomUUID ? crypto.randomUUID() : `id-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
+})();
+</script>
+</body>
+</html>
