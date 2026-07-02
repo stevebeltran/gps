@@ -300,6 +300,13 @@
     .tool-text strong{font-size:.64rem;color:var(--muted);letter-spacing:0;text-transform:none}
     .tool-text span{font-weight:800;color:var(--text)}
     .hint{color:var(--muted);font-size:.86rem}
+    .draw-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 16px;border-bottom:1px solid var(--stroke);background:#fff}
+    .draw-group-label{font-size:.68rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+    .draw-btn{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:6px 12px;background:#fff;color:#1f2937;border:1px solid var(--stroke);border-radius:10px;font-size:.78rem;font-weight:700;cursor:pointer}
+    .draw-btn.active{outline:3px solid rgba(37,99,235,.12);border-color:var(--accent);background:#eff6ff}
+    .draw-tools input[type="text"]{min-height:38px;padding:6px 10px;border:1px solid var(--stroke);border-radius:10px;font-size:.78rem;min-width:150px}
+    .draw-label{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;font-weight:700;color:var(--muted)}
+    .draw-sep{width:1px;align-self:stretch;background:var(--stroke)}
 
     @media(max-width:980px){
       .summary{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -682,9 +689,24 @@
           <button id="closeModalBtn" class="secondary-btn" type="button">Close</button>
         </div>
       </div>
+      <div id="drawTools" class="draw-tools">
+        <span class="draw-group-label">Draw</span>
+        <button class="draw-btn" type="button" data-tool="pen">✏️ Pen</button>
+        <button class="draw-btn" type="button" data-tool="text">Text</button>
+        <input type="text" id="drawTextInput" placeholder="Text to place…">
+        <label class="draw-label">Color <input type="color" id="drawColor" value="#ff0000"></label>
+        <label class="draw-label">Width <input type="range" id="drawWidth" min="1" max="20" value="4"></label>
+        <span class="draw-sep"></span>
+        <span class="draw-group-label">Stamps</span>
+        <button class="draw-btn draw-symbol" type="button" data-tool="symbol" data-symbol="power" style="border-left:6px solid #e60000">⚡ Power</button>
+        <button class="draw-btn draw-symbol" type="button" data-tool="symbol" data-symbol="ethernet" style="border-left:6px solid #0057b8">🔌 Ethernet</button>
+        <button class="draw-btn draw-symbol" type="button" data-tool="symbol" data-symbol="rf" style="border-left:6px solid #ff7a00">📶 RF</button>
+        <button class="draw-btn draw-symbol" type="button" data-tool="symbol" data-symbol="crane" style="border-left:6px solid #ffd100">🏗 Crane</button>
+        <button class="draw-btn draw-symbol" type="button" data-tool="symbol" data-symbol="unistrut" style="border-left:6px solid #9ea3a8">▯ Unistrut</button>
+      </div>
       <div class="canvas-wrap"><canvas id="annotationCanvas"></canvas></div>
       <div class="modal-foot">
-        <div class="hint">Select a marker type, then click anywhere on the photo. Callout bubbles line up across the top and continue on the next row when full. Use Save in the upper-right tool row when finished.</div>
+        <div class="hint">Select a marker type and click the photo to place a callout bubble — or use the Draw row for freehand pen, text labels, and symbol stamps. Undo removes the most recent addition of either kind. Use Save when finished.</div>
       </div>
     </div>
   </div>
