@@ -2987,6 +2987,52 @@
     drawMapAttribution(ctx,MAP_TARGET_W,MAP_TARGET_H,styleDef.attribution);
     return canvas.toDataURL("image/png");
   }
+  function buildSchematicMapDataUrl(points){
+    const W=MAP_TARGET_W,H=MAP_TARGET_H,PAD=90;
+    const canvas=document.createElement("canvas"); canvas.width=W; canvas.height=H;
+    const ctx=canvas.getContext("2d");
+    ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle="#e5e7eb"; ctx.lineWidth=1;
+    for(let x=0;x<=W;x+=50){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+    for(let y=0;y<=H;y+=50){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+    const lat0=points.reduce((s,p)=>s+p.lat,0)/points.length, lon0=points.reduce((s,p)=>s+p.lon,0)/points.length;
+    const cos0=Math.max(.2,Math.cos(lat0*Math.PI/180));
+    const local=points.map(p=>({x:(p.lon-lon0)*111320*cos0, y:(p.lat-lat0)*110540, label:p.label}));
+    let maxAbs=1;
+    for(const p of local) maxAbs=Math.max(maxAbs,Math.abs(p.x),Math.abs(p.y));
+    maxAbs=Math.max(maxAbs,60);
+    const scale=Math.min((W/2-PAD)/maxAbs,(H/2-PAD)/maxAbs);
+    for(const p of local) drawMapMarker(ctx,W/2+p.x*scale,H/2-p.y*scale,p.label);
+    ctx.save();
+    ctx.strokeStyle="#111827"; ctx.fillStyle="#111827"; ctx.lineWidth=2;
+    const nx=W-46, ny=64;
+    ctx.beginPath(); ctx.moveTo(nx,ny); ctx.lineTo(nx,ny-30); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(nx,ny-36); ctx.lineTo(nx-7,ny-22); ctx.lineTo(nx+7,ny-22); ctx.closePath(); ctx.fill();
+    ctx.font="bold 14px Arial,sans-serif"; ctx.textAlign="center"; ctx.fillText("N",nx,ny+16);
+    ctx.font="12px Arial,sans-serif"; ctx.textAlign="left"; ctx.fillStyle="#6b7280";
+    ctx.fillText("Basemap unavailable — schematic plot",16,24);
+    ctx.restore();
+    drawMapScaleBar(ctx,H,1/scale);
+    return canvas.toDataURL("image/png");
+  }
+  async function buildReportMapDataUrl(points,style){
+    try{ return {dataUrl:await buildMapImageDataUrl(points,style),fallback:false}; }
+    catch(err){
+      console.warn("Tile map unavailable, using schematic",err);
+      try{ return {dataUrl:buildSchematicMapDataUrl(points),fallback:true}; }
+      catch(err2){ console.error("Schematic map failed",err2); return null; }
+    }
+  }
+  async function appendMapFigure(children,run,mapResult,caption,legend){
+    const api=window.docx||{}; const {Paragraph,ImageRun,AlignmentType}=api;
+    if(!Paragraph||!ImageRun) return;
+    const img=await loadImage(mapResult.dataUrl);
+    const maxW=520, ratio=Math.min(1,maxW/img.naturalWidth);
+    const width=Math.round(img.naturalWidth*ratio), height=Math.round(img.naturalHeight*ratio);
+    children.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:80,after:40},children:[new ImageRun({data:dataUrlToUint8Array(mapResult.dataUrl),transformation:{width,height}})]}));
+    children.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:legend?20:100},children:[run(caption,{italics:true,color:"595959",size:18})]}));
+    if(legend) children.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:100},children:[run(legend,{color:"8a94a6",size:16})]}));
+  }
   async function getAnnotatedImageDataUrl(photo,maxWidth=960,quality=.72){ const img=await loadImage(photo.previewUrl); const scale=Math.min(1,maxWidth/img.naturalWidth); const off=document.createElement("canvas"); off.width=Math.max(1,Math.round(img.naturalWidth*scale)); off.height=Math.max(1,Math.round(img.naturalHeight*scale)); drawAnnotationCanvas(off,img,photo); return off.toDataURL("image/jpeg",quality); }
   function loadImage(src){ return new Promise((resolve,reject)=>{ const img=new Image(); img.onload=()=>resolve(img); img.onerror=reject; img.src=src; }); }
 
