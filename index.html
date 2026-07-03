@@ -2952,7 +2952,7 @@
     const annotated=photos.filter(p=>hasAnnotations(p));
     if(!annotated.length) throw new Error("No annotated photos available for Word export");
     const onProgress = typeof options.onProgress === "function" ? options.onProgress : () => {};
-    const {Document,Packer,Paragraph,TextRun,ImageRun,AlignmentType,ExternalHyperlink,Table,TableRow,TableCell,WidthType,BorderStyle,Footer,PageNumber}=window.docx;
+    const {Document,Packer,Paragraph,TextRun,ImageRun,AlignmentType,ExternalHyperlink,Table,TableRow,TableCell,WidthType,BorderStyle,Footer,PageNumber,PageBreak}=window.docx;
     const FONT="Calibri", NAVY="1F3864", GRAY="595959", DARK="2B2B2B", LINK="0563C1";
     const run=(text,opts={})=>new TextRun({font:FONT,color:DARK,size:19,text,...opts});
     const metaLine=(label,value)=>new Paragraph({spacing:{after:20},children:[run(`${label}:  `,{bold:true,color:GRAY}),...(Array.isArray(value)?value:[typeof value==="string"?run(value):value])]});
@@ -2964,19 +2964,47 @@
     const infoRow=(label,value)=>new TableRow({children:[infoCell(label,{w:1800,label:true}),infoCell(value || "—",{w:7560})]});
     const agencyName=cleanFileNamePart(getProjectInfo().agency);
     const sorted=(options.sorted || getSortedGroups()).filter(g=>g.photos.some(p=>hasAnnotations(p)));
+    const info=getProjectInfo();
+    const dash=v=>v||"—";
+    const coverLogo=[];
+    try{
+      const logoEl=document.querySelector(".drop-brand img");
+      if(logoEl && logoEl.src.startsWith("data:image")){
+        const logoImg=await loadImage(logoEl.src);
+        const lw=Math.min(220,logoImg.naturalWidth), lh=Math.round(logoImg.naturalHeight*(lw/logoImg.naturalWidth));
+        coverLogo.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:600,after:300},children:[new ImageRun({data:dataUrlToUint8Array(logoEl.src),transformation:{width:lw,height:lh}})]}));
+      }
+    }catch(err){ console.warn("Cover logo skipped",err); }
+    const coverLabel=text=>new Paragraph({spacing:{before:220,after:80},children:[new TextRun({text,bold:true,allCaps:true,color:NAVY,size:20,font:FONT})]});
+    const coverTable=rows=>new Table({
+      width:{size:9360,type:WidthType.DXA},
+      borders:{top:{style:BorderStyle.SINGLE,color:"BFBFBF",size:4},bottom:{style:BorderStyle.SINGLE,color:"BFBFBF",size:4},insideHorizontal:{style:BorderStyle.SINGLE,color:"BFBFBF",size:2},left:{style:BorderStyle.NONE},right:{style:BorderStyle.NONE},insideVertical:{style:BorderStyle.NONE}},
+      rows
+    });
     const children=[
+      ...coverLogo,
       new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:40},children:[new TextRun({text:"Site Survey Report",bold:true,allCaps:true,color:NAVY,size:44,font:FONT})]}),
-      new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:160},children:[run("DFR Deployment Site Assessment",{color:GRAY,size:20})]}),
-      new Table({
-        width:{size:9360,type:WidthType.DXA},
-        borders:{top:{style:BorderStyle.SINGLE,color:"BFBFBF",size:4},bottom:{style:BorderStyle.SINGLE,color:"BFBFBF",size:4},insideHorizontal:{style:BorderStyle.SINGLE,color:"BFBFBF",size:2},left:{style:BorderStyle.NONE},right:{style:BorderStyle.NONE},insideVertical:{style:BorderStyle.NONE}},
-        rows:[
-          infoRow("AGENCY",agencyName),
-          infoRow("SURVEY DATE",formatSurveyDateDisplay(photos)),
-          infoRow("GENERATED",new Date().toLocaleString())
-        ]
-      }),
-      new Paragraph({spacing:{after:120},children:[run("")]})
+      new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:260},children:[run("DFR Deployment Site Assessment",{color:GRAY,size:20})]}),
+      coverLabel("Customer"),
+      coverTable([
+        infoRow("AGENCY",dash(info.agency)),
+        infoRow("POINT OF CONTACT",dash([info.pocName,info.pocTitle].filter(Boolean).join(", "))),
+        infoRow("PHONE",dash(info.pocPhone)),
+        infoRow("EMAIL",dash(info.pocEmail)),
+        infoRow("SITE ADDRESS",dash(info.siteAddress)),
+        infoRow("PROJECT / JOB #",dash(info.jobNumber)),
+        infoRow("SURVEY DATE",effectiveSurveyDate(photos))
+      ]),
+      coverLabel("Prepared By"),
+      coverTable([
+        infoRow("NAME",dash([info.installerName,info.installerTitle].filter(Boolean).join(", "))),
+        infoRow("PHONE",dash(info.installerPhone)),
+        infoRow("EMAIL",dash(info.installerEmail)),
+        infoRow("COMPANY","BRINC Drones, Inc."),
+        infoRow("GENERATED",new Date().toLocaleString())
+      ]),
+      new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:300},children:[run(`Revision ${info.revision}  ·  ${info.status}`,{bold:true,color:GRAY,size:20})]}),
+      new Paragraph({children:[new PageBreak()]})
     ];
     let idx=0;
     for(let gi=0;gi<sorted.length;gi++){
