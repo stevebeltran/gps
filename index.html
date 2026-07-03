@@ -2952,14 +2952,14 @@
     const annotated=photos.filter(p=>hasAnnotations(p));
     if(!annotated.length) throw new Error("No annotated photos available for Word export");
     const onProgress = typeof options.onProgress === "function" ? options.onProgress : () => {};
-    const {Document,Packer,Paragraph,TextRun,ImageRun,AlignmentType,ExternalHyperlink,Table,TableRow,TableCell,WidthType,BorderStyle,Footer,PageNumber,PageBreak}=window.docx;
+    const {Document,Packer,Paragraph,TextRun,ImageRun,AlignmentType,ExternalHyperlink,Table,TableRow,TableCell,WidthType,BorderStyle,Footer,PageNumber,PageBreak,InternalHyperlink,Bookmark}=window.docx;
     const FONT="Calibri", NAVY="1F3864", GRAY="595959", DARK="2B2B2B", LINK="0563C1";
     const run=(text,opts={})=>new TextRun({font:FONT,color:DARK,size:19,text,...opts});
     const metaLine=(label,value)=>new Paragraph({spacing:{after:20},children:[run(`${label}:  `,{bold:true,color:GRAY}),...(Array.isArray(value)?value:[typeof value==="string"?run(value):value])]});
     const mapsLink=(lat,lon)=>ExternalHyperlink
       ? new Paragraph({spacing:{before:40,after:220},children:[new ExternalHyperlink({link:googleMapsUrlForGps(lat,lon),children:[new TextRun({text:"View location on Google Maps",style:"Hyperlink",font:FONT,size:19,color:LINK,underline:{}})]})]})
       : metaLine("Map",googleMapsUrlForGps(lat,lon));
-    const sectionHeading=text=>new Paragraph({spacing:{before:280,after:140},border:{bottom:{style:BorderStyle.SINGLE,color:NAVY,size:12,space:2}},children:[new TextRun({text,bold:true,allCaps:true,color:NAVY,size:26,font:FONT})]});
+    const sectionHeading=(text,anchor)=>new Paragraph({spacing:{before:280,after:140},border:{bottom:{style:BorderStyle.SINGLE,color:NAVY,size:12,space:2}},children:[new Bookmark({id:anchor,children:[new TextRun({text,bold:true,allCaps:true,color:NAVY,size:26,font:FONT})]})]});
     const infoCell=(text,opts)=>new TableCell({width:{size:opts.w,type:WidthType.DXA},margins:{top:60,bottom:60,left:100,right:100},children:[new Paragraph({children:[run(text,opts.label?{bold:true,color:GRAY,size:18}:{size:20})]})]});
     const infoRow=(label,value)=>new TableRow({children:[infoCell(label,{w:1800,label:true}),infoCell(value || "—",{w:7560})]});
     const agencyName=cleanFileNamePart(getProjectInfo().agency);
@@ -3006,10 +3006,15 @@
       new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:300},children:[run(`Revision ${info.revision}  ·  ${info.status}`,{bold:true,color:GRAY,size:20})]}),
       new Paragraph({children:[new PageBreak()]})
     ];
+    children.push(new Paragraph({spacing:{after:160},children:[new TextRun({text:"Contents",bold:true,allCaps:true,color:NAVY,size:30,font:FONT})]}));
+    sorted.forEach((g,gi)=>{
+      children.push(new Paragraph({spacing:{after:90},children:[new InternalHyperlink({anchor:`loc${gi}`,children:[new TextRun({text:`${gi+1}.  ${g.name || "Unknown Location"}`,style:"Hyperlink",font:FONT,size:21,color:LINK,underline:{}})]})]}));
+    });
+    children.push(new Paragraph({children:[new PageBreak()]}));
     let idx=0;
     for(let gi=0;gi<sorted.length;gi++){
       const g=sorted[gi], imgs=g.photos.filter(p=>hasAnnotations(p)).sort(comparePhotoTime);
-      children.push(sectionHeading(g.name || "Unknown Location"));
+      children.push(sectionHeading(g.name || "Unknown Location",`loc${gi}`));
       const addressText=[g.placeName,g.address].filter(Boolean).join(" | ");
       if(addressText) children.push(metaLine("Address",addressText));
       children.push(metaLine("Date of survey",formatSurveyDateDisplay(g.photos)));
