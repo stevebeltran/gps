@@ -2952,7 +2952,7 @@
     const annotated=photos.filter(p=>hasAnnotations(p));
     if(!annotated.length) throw new Error("No annotated photos available for Word export");
     const onProgress = typeof options.onProgress === "function" ? options.onProgress : () => {};
-    const {Document,Packer,Paragraph,TextRun,ImageRun,AlignmentType,ExternalHyperlink,Table,TableRow,TableCell,WidthType,BorderStyle,Footer,PageNumber,PageBreak,InternalHyperlink,Bookmark}=window.docx;
+    const {Document,Packer,Paragraph,TextRun,ImageRun,AlignmentType,ExternalHyperlink,Table,TableRow,TableCell,WidthType,BorderStyle,Footer,PageNumber,PageBreak,InternalHyperlink,Bookmark,Header,TabStopType}=window.docx;
     const FONT="Calibri", NAVY="1F3864", GRAY="595959", DARK="2B2B2B", LINK="0563C1";
     const run=(text,opts={})=>new TextRun({font:FONT,color:DARK,size:19,text,...opts});
     const metaLine=(label,value)=>new Paragraph({spacing:{after:20},children:[run(`${label}:  `,{bold:true,color:GRAY}),...(Array.isArray(value)?value:[typeof value==="string"?run(value):value])]});
@@ -3025,7 +3025,8 @@
         onProgress(`Adding annotated image ${idx} of ${annotated.length}...`);
         const dataUrl=await getAnnotatedImageDataUrl(p,960,.72), bytes=dataUrlToUint8Array(dataUrl), img=await loadImage(dataUrl), maxW=500, ratio=Math.min(1,maxW/img.naturalWidth), width=Math.round(img.naturalWidth*ratio), height=Math.round(img.naturalHeight*ratio);
         children.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:80,after:40},children:[new ImageRun({data:bytes,transformation:{width,height}})]}));
-        children.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:100},children:[run(`Figure ${idx}. ${p.fileName}`,{italics:true,color:GRAY,size:18})]}));
+        const figureText = p.caption ? `Figure ${idx}. ${p.caption}` : `Figure ${idx} — ${g.name || "Unknown Location"}`;
+        children.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:100},children:[run(figureText,{italics:true,color:GRAY,size:18})]}));
         children.push(metaLine("Date",formatDateForDisplay(p.capturedAt)));
         if(Number.isFinite(p.lat)&&Number.isFinite(p.lon)) children.push(metaLine("Coordinates",formatGpsCoordinates(p.lat,p.lon)));
         if(p.markers.length) children.push(metaLine("Markers",p.markers.map((m,i)=>`${i+1}. ${getMarkerOption(m.type).symbol} ${getMarkerOption(m.type).label}`).join("; ")));
@@ -3048,13 +3049,18 @@
         }
       });
     }
-    const footer=Footer && PageNumber ? new Footer({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:"Page ",font:FONT,color:"808080",size:16}),new TextRun({children:[PageNumber.CURRENT],font:FONT,color:"808080",size:16})]})]}) : null;
+    const footRun=(text)=>new TextRun({text,font:FONT,color:"808080",size:16});
+    const footer=Footer && PageNumber ? new Footer({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[footRun(`${info.status}  ·  Rev ${info.revision}  ·  Page `),new TextRun({children:[PageNumber.CURRENT],font:FONT,color:"808080",size:16}),footRun(" of "),new TextRun({children:[PageNumber.TOTAL_PAGES],font:FONT,color:"808080",size:16})]})]}) : null;
+    const headerLeft=[info.agency,info.jobNumber?`Job #${info.jobNumber}`:""].filter(Boolean).join("  ·  ") || "Site Survey Report";
+    const header=Header ? new Header({children:[new Paragraph({tabStops:[{type:TabStopType.RIGHT,position:9360}],border:{bottom:{style:BorderStyle.SINGLE,color:"BFBFBF",size:4,space:2}},children:[new TextRun({text:headerLeft,font:FONT,color:"808080",size:16}),new TextRun({text:"\tBRINC",font:FONT,color:"808080",size:16,bold:true})]})]}) : null;
+    const emptyHeader=Header ? new Header({children:[new Paragraph({children:[]})]}) : null;
+    const emptyFooter=Footer ? new Footer({children:[new Paragraph({children:[]})]}) : null;
     const doc=new Document({
       creator:"BRINC TANK Photo Location Grouper",
       title:"Site Survey Report",
       description:"DFR deployment site assessment generated in browser.",
       styles:{default:{document:{run:{font:FONT,color:DARK,size:20}}}},
-      sections:[{properties:{page:{margin:{top:1440,right:1440,bottom:1440,left:1440}}},...(footer?{footers:{default:footer}}:{}),children}]
+      sections:[{properties:{page:{margin:{top:1440,right:1440,bottom:1440,left:1440}},titlePage:true},...(header?{headers:{default:header,first:emptyHeader}}:{}),...(footer?{footers:{default:footer,first:emptyFooter}}:{}),children}]
     });
     const blob=await Packer.toBlob(doc);
     return {blob,fileName:makeWordDocumentFileName(sorted)};
