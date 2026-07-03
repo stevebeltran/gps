@@ -2962,7 +2962,6 @@
     const sectionHeading=(text,anchor)=>new Paragraph({spacing:{before:280,after:140},border:{bottom:{style:BorderStyle.SINGLE,color:NAVY,size:12,space:2}},children:[new Bookmark({id:anchor,children:[new TextRun({text,bold:true,allCaps:true,color:NAVY,size:26,font:FONT})]})]});
     const infoCell=(text,opts)=>new TableCell({width:{size:opts.w,type:WidthType.DXA},margins:{top:60,bottom:60,left:100,right:100},children:[new Paragraph({children:[run(text,opts.label?{bold:true,color:GRAY,size:18}:{size:20})]})]});
     const infoRow=(label,value)=>new TableRow({children:[infoCell(label,{w:1800,label:true}),infoCell(value || "—",{w:7560})]});
-    const agencyName=cleanFileNamePart(getProjectInfo().agency);
     const sorted=(options.sorted || getSortedGroups()).filter(g=>g.photos.some(p=>hasAnnotations(p)));
     const info=getProjectInfo();
     const dash=v=>v||"—";
