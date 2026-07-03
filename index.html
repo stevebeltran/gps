@@ -348,6 +348,15 @@
       padding:16px;
       box-shadow:0 8px 24px rgba(16,24,40,.06);
     }
+    .project-info{border:1px solid var(--stroke);border-radius:var(--radius);background:var(--panel);box-shadow:var(--shadow);padding:0}
+    .pi-summary{cursor:pointer;padding:14px 18px;font-weight:800;font-size:.95rem;color:var(--text)}
+    .pi-summary #projectInfoBrief{font-weight:600;color:var(--muted)}
+    .pi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;padding:0 18px 18px}
+    .pi-block{border:1px solid var(--stroke3);border-radius:12px;padding:10px 14px 14px;display:grid;gap:8px;min-width:0}
+    .pi-block legend{font-size:.78rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:0 6px}
+    .pi-block label{display:grid;gap:3px;font-size:.78rem;color:var(--muted)}
+    .pi-block input,.pi-block select{min-height:34px;padding:4px 10px;border:1px solid var(--stroke);border-radius:8px;background:#fff;color:var(--text);font-size:.86rem}
+    .pi-block #newProjectBtn{margin-top:4px;justify-self:start}
     .section-head{
       display:flex;
       align-items:flex-start;
@@ -370,17 +379,6 @@
       font-weight:800;
       font-size:.84rem;
       white-space:nowrap;
-    }
-    .agency-input{
-      min-height:38px;
-      padding:0 10px;
-      border:1px solid var(--stroke);
-      border-radius:10px;
-      font:inherit;
-      font-size:.84rem;
-      color:var(--text);
-      background:#fff;
-      width:170px;
     }
     /* Sticky action rail that follows the page while scrolling */
     #actionRail{position:fixed;left:14px;top:50%;transform:translateY(-50%);display:none;flex-direction:column;gap:10px;z-index:1500}
@@ -611,6 +609,42 @@
         <div id="statusCard" class="status-card"><div class="spinner"></div><span id="statusText">No photos loaded.</span></div>
       </div>
 
+      <details id="projectInfoPanel" class="section-shell project-info" open>
+        <summary class="pi-summary">Project Info — <span id="projectInfoBrief">not set</span></summary>
+        <div class="pi-grid">
+          <fieldset class="pi-block">
+            <legend>Customer</legend>
+            <label>Agency name <input id="piAgency" type="text" /></label>
+            <label>POC name <input id="piPocName" type="text" /></label>
+            <label>POC title <input id="piPocTitle" type="text" /></label>
+            <label>POC phone <input id="piPocPhone" type="tel" /></label>
+            <label>POC email <input id="piPocEmail" type="email" /></label>
+            <label>Site address <input id="piSiteAddress" type="text" /></label>
+            <label>Project / job # <input id="piJobNumber" type="text" /></label>
+          </fieldset>
+          <fieldset class="pi-block">
+            <legend>BRINC (prepared by)</legend>
+            <label>Installer name <input id="piInstallerName" type="text" /></label>
+            <label>Title <input id="piInstallerTitle" type="text" /></label>
+            <label>Phone <input id="piInstallerPhone" type="tel" /></label>
+            <label>Email <input id="piInstallerEmail" type="email" /></label>
+          </fieldset>
+          <fieldset class="pi-block">
+            <legend>Document</legend>
+            <label>Revision <input id="piRevision" type="text" value="A" /></label>
+            <label>Status
+              <select id="piStatus">
+                <option>Draft</option>
+                <option>For Review</option>
+                <option>Issued</option>
+              </select>
+            </label>
+            <label>Survey date <input id="piSurveyDate" type="text" placeholder="Auto from photos" /></label>
+            <button id="newProjectBtn" class="secondary-btn" type="button">New project</button>
+          </fieldset>
+        </div>
+      </details>
+
       <section class="section-shell results-section" aria-labelledby="groups">
         <div class="section-head">
           <div class="section-head-copy">
@@ -618,7 +652,6 @@
           </div>
           <div class="header-actions export-actions" style="display:none">
             <span class="export-instruction">Verify folder address before export</span>
-            <input id="agencyNameInput" class="agency-input" type="text" placeholder="Agency name" aria-label="Agency name for export file names" />
             <button id="rebuildLookupBtn" class="secondary-btn" type="button">Re-run Lookup</button>
             <button id="downloadBtn" disabled>Download ZIP</button>
             <button id="downloadDocBtn" disabled>Download Word Document</button>
@@ -765,7 +798,7 @@
     "Iberville Parish Government"
   ];
   const $ = id => document.getElementById(id);
-  const dropZone = $("dropZone"), fileInput = $("fileInput"), directoryInput = $("directoryInput"), selectFilesBtn = $("selectFilesBtn"), selectFolderBtn = $("selectFolderBtn"), statusCard = $("statusCard"), statusText = $("statusText"), previewGrid = $("previewGrid"), directoryTree = $("directoryTree"), clusterMapEl = $("clusterMap"), mapLegend = $("mapLegend"), addressReviewList = $("addressReviewList"), overrideRulesInput = $("overrideRulesInput"), applyOverridesBtn = $("applyOverridesBtn"), rebuildLookupBtn = $("rebuildLookupBtn"), groupsContainer = $("groupsContainer"), downloadBtn = $("downloadBtn"), downloadDocBtn = $("downloadDocBtn"), agencyNameInput = $("agencyNameInput"), actionRail = $("actionRail"), railZipBtn = $("railZipBtn"), railDocBtn = $("railDocBtn");
+  const dropZone = $("dropZone"), fileInput = $("fileInput"), directoryInput = $("directoryInput"), selectFilesBtn = $("selectFilesBtn"), selectFolderBtn = $("selectFolderBtn"), statusCard = $("statusCard"), statusText = $("statusText"), previewGrid = $("previewGrid"), directoryTree = $("directoryTree"), clusterMapEl = $("clusterMap"), mapLegend = $("mapLegend"), addressReviewList = $("addressReviewList"), overrideRulesInput = $("overrideRulesInput"), applyOverridesBtn = $("applyOverridesBtn"), rebuildLookupBtn = $("rebuildLookupBtn"), groupsContainer = $("groupsContainer"), downloadBtn = $("downloadBtn"), downloadDocBtn = $("downloadDocBtn"), actionRail = $("actionRail"), railZipBtn = $("railZipBtn"), railDocBtn = $("railDocBtn");
   const totalCount = $("totalCount"), gpsCount = $("gpsCount"), missingGpsCount = $("missingGpsCount"), annotatedCount = $("annotatedCount"), groupCount = $("groupCount");
   const annotationModal = $("annotationModal"), modalTitle = $("modalTitle"), modalSubTitle = $("modalSubTitle"), canvas = $("annotationCanvas"), ctx = canvas.getContext("2d"), markerPalette = $("markerPalette"), undoMarkerBtn = $("undoMarkerBtn"), closeModalBtn = $("closeModalBtn"), saveAnnotationBtn = $("saveAnnotationBtn");
   let photos = [], groups = new Map(), seenFiles = new Set(), locationCache = new Map(), activePhoto = null, activeImage = null, clusterMap = null, clusterMapLayer = null;
@@ -2924,7 +2957,7 @@
     const sectionHeading=text=>new Paragraph({spacing:{before:280,after:140},border:{bottom:{style:BorderStyle.SINGLE,color:NAVY,size:12,space:2}},children:[new TextRun({text,bold:true,allCaps:true,color:NAVY,size:26,font:FONT})]});
     const infoCell=(text,opts)=>new TableCell({width:{size:opts.w,type:WidthType.DXA},margins:{top:60,bottom:60,left:100,right:100},children:[new Paragraph({children:[run(text,opts.label?{bold:true,color:GRAY,size:18}:{size:20})]})]});
     const infoRow=(label,value)=>new TableRow({children:[infoCell(label,{w:1800,label:true}),infoCell(value || "—",{w:7560})]});
-    const agencyName=cleanFileNamePart(agencyNameInput ? agencyNameInput.value : "");
+    const agencyName=cleanFileNamePart(getProjectInfo().agency);
     const sorted=(options.sorted || getSortedGroups()).filter(g=>g.photos.some(p=>hasAnnotations(p)));
     const children=[
       new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:40},children:[new TextRun({text:"Site Survey Report",bold:true,allCaps:true,color:NAVY,size:44,font:FONT})]}),
@@ -3060,7 +3093,7 @@
     return sanitizeFileName(`${city}_${surveyText}_Annotated_Photos.docx`);
   }
   function makeZipFileName(){
-    const agency = cleanFileNamePart(agencyNameInput ? agencyNameInput.value : "") || "Agency";
+    const agency = cleanFileNamePart(getProjectInfo().agency) || "Agency";
     return sanitizeFileName(`${agency}_${formatFileTimestamp(new Date())}.zip`);
   }
   function formatFileTimestamp(date){
@@ -3079,6 +3112,53 @@
   function appendWarning(a,b){ return [a,b].filter(Boolean).join(" "); }
   function formatDateForDisplay(d){ return d instanceof Date && !Number.isNaN(d.getTime()) ? d.toLocaleString() : "Unknown"; }
   function abbreviateState(state){ const map={"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY","District of Columbia":"DC"}; return map[state] || state; }
+  const PROJECT_INFO_KEY = "brincGpsProjectInfo";
+  const PI_FIELDS = ["piAgency","piPocName","piPocTitle","piPocPhone","piPocEmail","piSiteAddress","piJobNumber","piInstallerName","piInstallerTitle","piInstallerPhone","piInstallerEmail","piRevision","piStatus","piSurveyDate"];
+  const PI_CUSTOMER_FIELDS = ["piAgency","piPocName","piPocTitle","piPocPhone","piPocEmail","piSiteAddress","piJobNumber","piRevision","piStatus","piSurveyDate"];
+  function getProjectInfo(){
+    const v = id => { const el = $(id); return el ? el.value.trim() : ""; };
+    return {
+      agency:v("piAgency"), pocName:v("piPocName"), pocTitle:v("piPocTitle"), pocPhone:v("piPocPhone"), pocEmail:v("piPocEmail"),
+      siteAddress:v("piSiteAddress"), jobNumber:v("piJobNumber"),
+      installerName:v("piInstallerName"), installerTitle:v("piInstallerTitle"), installerPhone:v("piInstallerPhone"), installerEmail:v("piInstallerEmail"),
+      revision:v("piRevision") || "A", status:v("piStatus") || "Draft", surveyDate:v("piSurveyDate")
+    };
+  }
+  function effectiveSurveyDate(photoList){ const i = getProjectInfo(); return i.surveyDate || formatSurveyDateDisplay(photoList); }
+  function saveProjectInfo(){
+    try{
+      const data = {};
+      PI_FIELDS.forEach(id => { const el = $(id); if(el) data[id] = el.value; });
+      localStorage.setItem(PROJECT_INFO_KEY, JSON.stringify(data));
+    }catch{}
+    updateProjectInfoBrief();
+  }
+  function loadProjectInfo(){
+    try{
+      const data = JSON.parse(localStorage.getItem(PROJECT_INFO_KEY) || "{}");
+      PI_FIELDS.forEach(id => { const el = $(id); if(el && data[id] !== undefined) el.value = data[id]; });
+    }catch{}
+    updateProjectInfoBrief();
+  }
+  function updateProjectInfoBrief(){
+    const i = getProjectInfo();
+    const parts = [i.agency, i.jobNumber ? `Job #${i.jobNumber}` : "", `${i.status} Rev ${i.revision}`].filter(Boolean);
+    const brief = $("projectInfoBrief");
+    if(brief) brief.textContent = i.agency ? parts.join(" — ") : "not set";
+  }
+  function clearCustomerFields(){
+    PI_CUSTOMER_FIELDS.forEach(id => { const el = $(id); if(!el) return; el.value = id === "piRevision" ? "A" : ""; });
+    const st = $("piStatus"); if(st) st.value = "Draft";
+    saveProjectInfo();
+  }
+  (function initProjectInfo(){
+    const panel = $("projectInfoPanel");
+    if(panel) panel.addEventListener("input", saveProjectInfo);
+    const npb = $("newProjectBtn");
+    if(npb) npb.addEventListener("click", clearCustomerFields);
+    loadProjectInfo();
+    if(panel && getProjectInfo().agency) panel.open = false;
+  })();
   function setStatus(msg,processing){ statusText.textContent=msg; statusCard.classList.toggle("processing",!!processing); }
   function updateButtons(){
     const zipDisabled=photos.length===0, docDisabled=photos.filter(p=>hasAnnotations(p)).length===0;
