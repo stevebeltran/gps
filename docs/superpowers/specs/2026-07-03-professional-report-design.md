@@ -36,8 +36,8 @@ A collapsible "Project Info" panel near the top of the app replaces the lone age
 ## 2. Photo captions
 
 - Caption text input added to the existing annotation modal.
-- Caption stored on the photo object.
-- Captions round-trip through the existing ZIP annotation export/import, so they survive reload/import.
+- Caption stored on the photo object, in-memory like all other annotations (the app has no annotation persistence; captions follow the same model).
+- Captions appear in the ZIP export's per-location `Location_Summary.txt` alongside existing photo metadata.
 - Word figure line becomes "Figure N. <caption>". Empty caption falls back to "Figure N — <location name>". Raw file names no longer appear as figure captions.
 
 ## 3. Word document rebuild (`buildWordDocumentBlob`)
@@ -74,7 +74,7 @@ A collapsible "Project Info" panel near the top of the app replaces the lone age
 
 - Export with all fields filled and with all fields empty; verify "—" fallbacks.
 - Open generated .docx in desktop Word and on iPhone (Word iOS + Quick Look): cover, TOC links jump to sections, header/footer correct on both.
-- Caption round-trip: set captions, export ZIP, re-import, captions intact.
+- Captions: set captions, export ZIP, verify captions in `Location_Summary.txt`; verify Word figure lines use captions with location-name fallback.
 - `localStorage`: reload page, BRINC block persists; "New project" clears customer fields only.
 
 ## Out of scope
