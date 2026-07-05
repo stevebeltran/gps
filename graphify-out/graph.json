@@ -1,0 +1,1761 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "progress.md",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/progress.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_progress",
+      "community": 9,
+      "norm_label": "progress.md"
+    },
+    {
+      "label": "SDD progress ledger \u2014 professional-report",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/progress.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_progress_sdd_progress_ledger_professional_report",
+      "community": 9,
+      "norm_label": "sdd progress ledger \u2014 professional-report"
+    },
+    {
+      "label": "task-1-brief.md",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-1-brief.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_1_brief",
+      "community": 10,
+      "norm_label": "task-1-brief.md"
+    },
+    {
+      "label": "Task 1: Project Info panel (UI + localStorage)",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-1-brief.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_1_brief_task_1_project_info_panel_ui_localstorage",
+      "community": 10,
+      "norm_label": "task 1: project info panel (ui + localstorage)"
+    },
+    {
+      "label": "task-1-report.md",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_1_report",
+      "community": 1,
+      "norm_label": "task-1-report.md"
+    },
+    {
+      "label": "Task 1 Report: Project Info Panel with localStorage Persistence",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_1_report_task_1_report_project_info_panel_with_localstorage_persistence",
+      "community": 1,
+      "norm_label": "task 1 report: project info panel with localstorage persistence"
+    },
+    {
+      "label": "What I did",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "sdd_task_1_report_what_i_did",
+      "community": 1,
+      "norm_label": "what i did"
+    },
+    {
+      "label": "Step 1: Added panel HTML (after line 612)",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L7",
+      "_origin": "ast",
+      "id": "sdd_task_1_report_step_1_added_panel_html_after_line_612",
+      "community": 1,
+      "norm_label": "step 1: added panel html (after line 612)"
+    },
+    {
+      "label": "Step 2: Removed old agency input",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "sdd_task_1_report_step_2_removed_old_agency_input",
+      "community": 1,
+      "norm_label": "step 2: removed old agency input"
+    },
+    {
+      "label": "Step 3: Added panel CSS",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L17",
+      "_origin": "ast",
+      "id": "sdd_task_1_report_step_3_added_panel_css",
+      "community": 1,
+      "norm_label": "step 3: added panel css"
+    },
+    {
+      "label": "Step 4: Added project-info JS (before setStatus function)",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L22",
+      "_origin": "ast",
+      "id": "sdd_task_1_report_step_4_added_project_info_js_before_setstatus_function",
+      "community": 1,
+      "norm_label": "step 4: added project-info js (before setstatus function)"
+    },
+    {
+      "label": "Step 5: Replaced agency input references",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L32",
+      "_origin": "ast",
+      "id": "sdd_task_1_report_step_5_replaced_agency_input_references",
+      "community": 1,
+      "norm_label": "step 5: replaced agency input references"
+    },
+    {
+      "label": "Verification output",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L36",
+      "_origin": "ast",
+      "id": "sdd_task_1_report_verification_output",
+      "community": 1,
+      "norm_label": "verification output"
+    },
+    {
+      "label": "Deviations from brief",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L51",
+      "_origin": "ast",
+      "id": "sdd_task_1_report_deviations_from_brief",
+      "community": 1,
+      "norm_label": "deviations from brief"
+    },
+    {
+      "label": "Concerns",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L55",
+      "_origin": "ast",
+      "id": "sdd_task_1_report_concerns",
+      "community": 1,
+      "norm_label": "concerns"
+    },
+    {
+      "label": "task-2-brief.md",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-2-brief.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_2_brief",
+      "community": 11,
+      "norm_label": "task-2-brief.md"
+    },
+    {
+      "label": "Task 2: Photo captions",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-2-brief.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_2_brief_task_2_photo_captions",
+      "community": 11,
+      "norm_label": "task 2: photo captions"
+    },
+    {
+      "label": "task-2-report.md",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-2-report.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_2_report",
+      "community": 6,
+      "norm_label": "task-2-report.md"
+    },
+    {
+      "label": "Task 2 Implementation Report: Photo captions",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-2-report.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_2_report_task_2_implementation_report_photo_captions",
+      "community": 6,
+      "norm_label": "task 2 implementation report: photo captions"
+    },
+    {
+      "label": "What I did",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-2-report.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "sdd_task_2_report_what_i_did",
+      "community": 6,
+      "norm_label": "what i did"
+    },
+    {
+      "label": "Changes made (index.html only):",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-2-report.md",
+      "source_location": "L7",
+      "_origin": "ast",
+      "id": "sdd_task_2_report_changes_made_index_html_only",
+      "community": 6,
+      "norm_label": "changes made (index.html only):"
+    },
+    {
+      "label": "Verification output",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-2-report.md",
+      "source_location": "L21",
+      "_origin": "ast",
+      "id": "sdd_task_2_report_verification_output",
+      "community": 6,
+      "norm_label": "verification output"
+    },
+    {
+      "label": "Deviations from brief",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-2-report.md",
+      "source_location": "L34",
+      "_origin": "ast",
+      "id": "sdd_task_2_report_deviations_from_brief",
+      "community": 6,
+      "norm_label": "deviations from brief"
+    },
+    {
+      "label": "Concerns",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-2-report.md",
+      "source_location": "L38",
+      "_origin": "ast",
+      "id": "sdd_task_2_report_concerns",
+      "community": 6,
+      "norm_label": "concerns"
+    },
+    {
+      "label": "task-3-brief.md",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-3-brief.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_3_brief",
+      "community": 12,
+      "norm_label": "task-3-brief.md"
+    },
+    {
+      "label": "Task 3: Word export \u2014 cover page",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-3-brief.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_3_brief_task_3_word_export_cover_page",
+      "community": 12,
+      "norm_label": "task 3: word export \u2014 cover page"
+    },
+    {
+      "label": "task-3-report.md",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-3-report.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_3_report",
+      "community": 8,
+      "norm_label": "task-3-report.md"
+    },
+    {
+      "label": "Task 3 Completion Report: Word Export Cover Page",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-3-report.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_3_report_task_3_completion_report_word_export_cover_page",
+      "community": 8,
+      "norm_label": "task 3 completion report: word export cover page"
+    },
+    {
+      "label": "What I Did",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-3-report.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "sdd_task_3_report_what_i_did",
+      "community": 8,
+      "norm_label": "what i did"
+    },
+    {
+      "label": "Verification Output",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-3-report.md",
+      "source_location": "L27",
+      "_origin": "ast",
+      "id": "sdd_task_3_report_verification_output",
+      "community": 8,
+      "norm_label": "verification output"
+    },
+    {
+      "label": "Deviations from Brief",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-3-report.md",
+      "source_location": "L45",
+      "_origin": "ast",
+      "id": "sdd_task_3_report_deviations_from_brief",
+      "community": 8,
+      "norm_label": "deviations from brief"
+    },
+    {
+      "label": "Concerns",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-3-report.md",
+      "source_location": "L53",
+      "_origin": "ast",
+      "id": "sdd_task_3_report_concerns",
+      "community": 8,
+      "norm_label": "concerns"
+    },
+    {
+      "label": "task-4-brief.md",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-4-brief.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_4_brief",
+      "community": 13,
+      "norm_label": "task-4-brief.md"
+    },
+    {
+      "label": "Task 4: Word export \u2014 bookmarks + static linked TOC",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-4-brief.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_4_brief_task_4_word_export_bookmarks_static_linked_toc",
+      "community": 13,
+      "norm_label": "task 4: word export \u2014 bookmarks + static linked toc"
+    },
+    {
+      "label": "task-4-report.md",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-4-report.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_4_report",
+      "community": 7,
+      "norm_label": "task-4-report.md"
+    },
+    {
+      "label": "Task 4 Report: Word Export Bookmarks + Static TOC",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-4-report.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_4_report_task_4_report_word_export_bookmarks_static_toc",
+      "community": 7,
+      "norm_label": "task 4 report: word export bookmarks + static toc"
+    },
+    {
+      "label": "What I Did",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-4-report.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "sdd_task_4_report_what_i_did",
+      "community": 7,
+      "norm_label": "what i did"
+    },
+    {
+      "label": "Changes Made",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-4-report.md",
+      "source_location": "L7",
+      "_origin": "ast",
+      "id": "sdd_task_4_report_changes_made",
+      "community": 7,
+      "norm_label": "changes made"
+    },
+    {
+      "label": "Verification Output",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-4-report.md",
+      "source_location": "L28",
+      "_origin": "ast",
+      "id": "sdd_task_4_report_verification_output",
+      "community": 7,
+      "norm_label": "verification output"
+    },
+    {
+      "label": "Deviations from Brief",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-4-report.md",
+      "source_location": "L48",
+      "_origin": "ast",
+      "id": "sdd_task_4_report_deviations_from_brief",
+      "community": 7,
+      "norm_label": "deviations from brief"
+    },
+    {
+      "label": "Concerns",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-4-report.md",
+      "source_location": "L57",
+      "_origin": "ast",
+      "id": "sdd_task_4_report_concerns",
+      "community": 7,
+      "norm_label": "concerns"
+    },
+    {
+      "label": "task-5-brief.md",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-5-brief.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_5_brief",
+      "community": 14,
+      "norm_label": "task-5-brief.md"
+    },
+    {
+      "label": "Task 5: Word export \u2014 headers/footers + figure captions",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-5-brief.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_5_brief_task_5_word_export_headers_footers_figure_captions",
+      "community": 14,
+      "norm_label": "task 5: word export \u2014 headers/footers + figure captions"
+    },
+    {
+      "label": "task-5-report.md",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_5_report",
+      "community": 0,
+      "norm_label": "task-5-report.md"
+    },
+    {
+      "label": "Task 5 Completion Report: Word export \u2014 headers/footers + figure captions",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "sdd_task_5_report_task_5_completion_report_word_export_headers_footers_figure_captions",
+      "community": 0,
+      "norm_label": "task 5 completion report: word export \u2014 headers/footers + figure captions"
+    },
+    {
+      "label": "What I Did",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "sdd_task_5_report_what_i_did",
+      "community": 0,
+      "norm_label": "what i did"
+    },
+    {
+      "label": "Step 1: Destructure Header and TabStopType",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L7",
+      "_origin": "ast",
+      "id": "sdd_task_5_report_step_1_destructure_header_and_tabstoptype",
+      "community": 0,
+      "norm_label": "step 1: destructure header and tabstoptype"
+    },
+    {
+      "label": "Step 2: Figure Captions with Photo Caption + Location Fallback",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "sdd_task_5_report_step_2_figure_captions_with_photo_caption_location_fallback",
+      "community": 0,
+      "norm_label": "step 2: figure captions with photo caption + location fallback"
+    },
+    {
+      "label": "Step 3: Headers and Footers",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "sdd_task_5_report_step_3_headers_and_footers",
+      "community": 0,
+      "norm_label": "step 3: headers and footers"
+    },
+    {
+      "label": "Step 4: Sections Configuration with titlePage",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L26",
+      "_origin": "ast",
+      "id": "sdd_task_5_report_step_4_sections_configuration_with_titlepage",
+      "community": 0,
+      "norm_label": "step 4: sections configuration with titlepage"
+    },
+    {
+      "label": "Verification Output",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L32",
+      "_origin": "ast",
+      "id": "sdd_task_5_report_verification_output",
+      "community": 0,
+      "norm_label": "verification output"
+    },
+    {
+      "label": "JavaScript Parse Check",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L34",
+      "_origin": "ast",
+      "id": "sdd_task_5_report_javascript_parse_check",
+      "community": 0,
+      "norm_label": "javascript parse check"
+    },
+    {
+      "label": "Grep Verification",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L39",
+      "_origin": "ast",
+      "id": "sdd_task_5_report_grep_verification",
+      "community": 0,
+      "norm_label": "grep verification"
+    },
+    {
+      "label": "Git Commit",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L45",
+      "_origin": "ast",
+      "id": "sdd_task_5_report_git_commit",
+      "community": 0,
+      "norm_label": "git commit"
+    },
+    {
+      "label": "Diff Review",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L51",
+      "_origin": "ast",
+      "id": "sdd_task_5_report_diff_review",
+      "community": 0,
+      "norm_label": "diff review"
+    },
+    {
+      "label": "Deviations from Brief",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L59",
+      "_origin": "ast",
+      "id": "sdd_task_5_report_deviations_from_brief",
+      "community": 0,
+      "norm_label": "deviations from brief"
+    },
+    {
+      "label": "Concerns",
+      "file_type": "document",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L67",
+      "_origin": "ast",
+      "id": "sdd_task_5_report_concerns",
+      "community": 0,
+      "norm_label": "concerns"
+    },
+    {
+      "label": "2026-07-02-annotation-import.md",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-07-02-annotation-import.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "plans_2026_07_02_annotation_import",
+      "community": 5,
+      "norm_label": "2026-07-02-annotation-import.md"
+    },
+    {
+      "label": "Annotation Import (survey \u2192 gps) Implementation Plan",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-07-02-annotation-import.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "plans_2026_07_02_annotation_import_annotation_import_survey_gps_implementation_plan",
+      "community": 5,
+      "norm_label": "annotation import (survey \u2192 gps) implementation plan"
+    },
+    {
+      "label": "Global Constraints",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-07-02-annotation-import.md",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "plans_2026_07_02_annotation_import_global_constraints",
+      "community": 5,
+      "norm_label": "global constraints"
+    },
+    {
+      "label": "Task 1: Data model, symbol tables, drawing primitives",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-07-02-annotation-import.md",
+      "source_location": "L22",
+      "_origin": "ast",
+      "id": "plans_2026_07_02_annotation_import_task_1_data_model_symbol_tables_drawing_primitives",
+      "community": 5,
+      "norm_label": "task 1: data model, symbol tables, drawing primitives"
+    },
+    {
+      "label": "Task 2: Toolbar UI (HTML + CSS)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-07-02-annotation-import.md",
+      "source_location": "L110",
+      "_origin": "ast",
+      "id": "plans_2026_07_02_annotation_import_task_2_toolbar_ui_html_css",
+      "community": 5,
+      "norm_label": "task 2: toolbar ui (html + css)"
+    },
+    {
+      "label": "Task 3: Tool selection, pointer handlers, unified undo",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-07-02-annotation-import.md",
+      "source_location": "L157",
+      "_origin": "ast",
+      "id": "plans_2026_07_02_annotation_import_task_3_tool_selection_pointer_handlers_unified_undo",
+      "community": 5,
+      "norm_label": "task 3: tool selection, pointer handlers, unified undo"
+    },
+    {
+      "label": "Task 4: Rendering, exports, annotated-state checks",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-07-02-annotation-import.md",
+      "source_location": "L271",
+      "_origin": "ast",
+      "id": "plans_2026_07_02_annotation_import_task_4_rendering_exports_annotated_state_checks",
+      "community": 5,
+      "norm_label": "task 4: rendering, exports, annotated-state checks"
+    },
+    {
+      "label": "Task 5: End-to-end manual verification",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-07-02-annotation-import.md",
+      "source_location": "L322",
+      "_origin": "ast",
+      "id": "plans_2026_07_02_annotation_import_task_5_end_to_end_manual_verification",
+      "community": 5,
+      "norm_label": "task 5: end-to-end manual verification"
+    },
+    {
+      "label": "2026-07-03-professional-report.md",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-07-03-professional-report.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "plans_2026_07_03_professional_report",
+      "community": 3,
+      "norm_label": "2026-07-03-professional-report.md"
+    },
+    {
+      "label": "Professional Survey Report Upgrade Implementation Plan",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-07-03-professional-report.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "plans_2026_07_03_professional_report_professional_survey_report_upgrade_implementation_plan",
+      "community": 3,
+      "norm_label": "professional survey report upgrade implementation plan"
+    },
+    {
+      "label": "Global Constraints",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-07-03-professional-report.md",
+      "source_location": "L13",
+      "_origin": "ast",
+      "id": "plans_2026_07_03_professional_report_global_constraints",
+      "community": 3,
+      "norm_label": "global constraints"
+    },
+    {
+      "label": "Verification harness (used by every task)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-07-03-professional-report.md",
+      "source_location": "L23",
+      "_origin": "ast",
+      "id": "plans_2026_07_03_professional_report_verification_harness_used_by_every_task",
+      "community": 3,
+      "norm_label": "verification harness (used by every task)"
+    },
+    {
+      "label": "Task 1: Project Info panel (UI + localStorage)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-07-03-professional-report.md",
+      "source_location": "L29",
+      "_origin": "ast",
+      "id": "plans_2026_07_03_professional_report_task_1_project_info_panel_ui_localstorage",
+      "community": 3,
+      "norm_label": "task 1: project info panel (ui + localstorage)"
+    },
+    {
+      "label": "Task 2: Photo captions",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-07-03-professional-report.md",
+      "source_location": "L191",
+      "_origin": "ast",
+      "id": "plans_2026_07_03_professional_report_task_2_photo_captions",
+      "community": 3,
+      "norm_label": "task 2: photo captions"
+    },
+    {
+      "label": "Task 3: Word export \u2014 cover page",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-07-03-professional-report.md",
+      "source_location": "L265",
+      "_origin": "ast",
+      "id": "plans_2026_07_03_professional_report_task_3_word_export_cover_page",
+      "community": 3,
+      "norm_label": "task 3: word export \u2014 cover page"
+    },
+    {
+      "label": "Task 4: Word export \u2014 bookmarks + static linked TOC",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-07-03-professional-report.md",
+      "source_location": "L345",
+      "_origin": "ast",
+      "id": "plans_2026_07_03_professional_report_task_4_word_export_bookmarks_static_linked_toc",
+      "community": 3,
+      "norm_label": "task 4: word export \u2014 bookmarks + static linked toc"
+    },
+    {
+      "label": "Task 5: Word export \u2014 headers/footers + figure captions",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-07-03-professional-report.md",
+      "source_location": "L406",
+      "_origin": "ast",
+      "id": "plans_2026_07_03_professional_report_task_5_word_export_headers_footers_figure_captions",
+      "community": 3,
+      "norm_label": "task 5: word export \u2014 headers/footers + figure captions"
+    },
+    {
+      "label": "Task 6: Full manual verification pass",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-07-03-professional-report.md",
+      "source_location": "L473",
+      "_origin": "ast",
+      "id": "plans_2026_07_03_professional_report_task_6_full_manual_verification_pass",
+      "community": 3,
+      "norm_label": "task 6: full manual verification pass"
+    },
+    {
+      "label": "2026-07-02-annotation-import-design.md",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "specs_2026_07_02_annotation_import_design",
+      "community": 2,
+      "norm_label": "2026-07-02-annotation-import-design.md"
+    },
+    {
+      "label": "Annotation Import: survey drawing tools \u2192 gps app",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "specs_2026_07_02_annotation_import_design_annotation_import_survey_drawing_tools_gps_app",
+      "community": 2,
+      "norm_label": "annotation import: survey drawing tools \u2192 gps app"
+    },
+    {
+      "label": "Goal",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L7",
+      "_origin": "ast",
+      "id": "specs_2026_07_02_annotation_import_design_goal",
+      "community": 2,
+      "norm_label": "goal"
+    },
+    {
+      "label": "Source material (survey app)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "specs_2026_07_02_annotation_import_design_source_material_survey_app",
+      "community": 2,
+      "norm_label": "source material (survey app)"
+    },
+    {
+      "label": "Approach (chosen: extend existing system)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L25",
+      "_origin": "ast",
+      "id": "specs_2026_07_02_annotation_import_design_approach_chosen_extend_existing_system",
+      "community": 2,
+      "norm_label": "approach (chosen: extend existing system)"
+    },
+    {
+      "label": "Data model",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L35",
+      "_origin": "ast",
+      "id": "specs_2026_07_02_annotation_import_design_data_model",
+      "community": 2,
+      "norm_label": "data model"
+    },
+    {
+      "label": "Toolbar UI",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L46",
+      "_origin": "ast",
+      "id": "specs_2026_07_02_annotation_import_design_toolbar_ui",
+      "community": 2,
+      "norm_label": "toolbar ui"
+    },
+    {
+      "label": "Behavior",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L58",
+      "_origin": "ast",
+      "id": "specs_2026_07_02_annotation_import_design_behavior",
+      "community": 2,
+      "norm_label": "behavior"
+    },
+    {
+      "label": "Rendering and export",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L73",
+      "_origin": "ast",
+      "id": "specs_2026_07_02_annotation_import_design_rendering_and_export",
+      "community": 2,
+      "norm_label": "rendering and export"
+    },
+    {
+      "label": "Out of scope (YAGNI, matches survey behavior)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L86",
+      "_origin": "ast",
+      "id": "specs_2026_07_02_annotation_import_design_out_of_scope_yagni_matches_survey_behavior",
+      "community": 2,
+      "norm_label": "out of scope (yagni, matches survey behavior)"
+    },
+    {
+      "label": "Validation",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L91",
+      "_origin": "ast",
+      "id": "specs_2026_07_02_annotation_import_design_validation",
+      "community": 2,
+      "norm_label": "validation"
+    },
+    {
+      "label": "2026-07-03-professional-report-design.md",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-03-professional-report-design.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "specs_2026_07_03_professional_report_design",
+      "community": 4,
+      "norm_label": "2026-07-03-professional-report-design.md"
+    },
+    {
+      "label": "Professional Survey Report Upgrade \u2014 Design",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-03-professional-report-design.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "specs_2026_07_03_professional_report_design_professional_survey_report_upgrade_design",
+      "community": 4,
+      "norm_label": "professional survey report upgrade \u2014 design"
+    },
+    {
+      "label": "Purpose",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-03-professional-report-design.md",
+      "source_location": "L7",
+      "_origin": "ast",
+      "id": "specs_2026_07_03_professional_report_design_purpose",
+      "community": 4,
+      "norm_label": "purpose"
+    },
+    {
+      "label": "1. Project Info panel (UI)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-03-professional-report-design.md",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "specs_2026_07_03_professional_report_design_1_project_info_panel_ui",
+      "community": 4,
+      "norm_label": "1. project info panel (ui)"
+    },
+    {
+      "label": "2. Photo captions",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-03-professional-report-design.md",
+      "source_location": "L36",
+      "_origin": "ast",
+      "id": "specs_2026_07_03_professional_report_design_2_photo_captions",
+      "community": 4,
+      "norm_label": "2. photo captions"
+    },
+    {
+      "label": "3. Word document rebuild (`buildWordDocumentBlob`)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-03-professional-report-design.md",
+      "source_location": "L43",
+      "_origin": "ast",
+      "id": "specs_2026_07_03_professional_report_design_3_word_document_rebuild_buildworddocumentblob",
+      "community": 4,
+      "norm_label": "3. word document rebuild (`buildworddocumentblob`)"
+    },
+    {
+      "label": "4. Error handling",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-03-professional-report-design.md",
+      "source_location": "L66",
+      "_origin": "ast",
+      "id": "specs_2026_07_03_professional_report_design_4_error_handling",
+      "community": 4,
+      "norm_label": "4. error handling"
+    },
+    {
+      "label": "5. Testing (manual)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-03-professional-report-design.md",
+      "source_location": "L73",
+      "_origin": "ast",
+      "id": "specs_2026_07_03_professional_report_design_5_testing_manual",
+      "community": 4,
+      "norm_label": "5. testing (manual)"
+    },
+    {
+      "label": "Out of scope",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-07-03-professional-report-design.md",
+      "source_location": "L80",
+      "_origin": "ast",
+      "id": "specs_2026_07_03_professional_report_design_out_of_scope",
+      "community": 4,
+      "norm_label": "out of scope"
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/progress.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "sdd_progress",
+      "target": "sdd_progress_sdd_progress_ledger_professional_report",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-1-brief.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "sdd_task_1_brief",
+      "target": "sdd_task_1_brief_task_1_project_info_panel_ui_localstorage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "sdd_task_1_report",
+      "target": "sdd_task_1_report_task_1_report_project_info_panel_with_localstorage_persistence",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L55",
+      "weight": 1.0,
+      "source": "sdd_task_1_report_task_1_report_project_info_panel_with_localstorage_persistence",
+      "target": "sdd_task_1_report_concerns",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "sdd_task_1_report_task_1_report_project_info_panel_with_localstorage_persistence",
+      "target": "sdd_task_1_report_deviations_from_brief",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "sdd_task_1_report_task_1_report_project_info_panel_with_localstorage_persistence",
+      "target": "sdd_task_1_report_verification_output",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "sdd_task_1_report_task_1_report_project_info_panel_with_localstorage_persistence",
+      "target": "sdd_task_1_report_what_i_did",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "sdd_task_1_report_what_i_did",
+      "target": "sdd_task_1_report_step_1_added_panel_html_after_line_612",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "sdd_task_1_report_what_i_did",
+      "target": "sdd_task_1_report_step_2_removed_old_agency_input",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "sdd_task_1_report_what_i_did",
+      "target": "sdd_task_1_report_step_3_added_panel_css",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "sdd_task_1_report_what_i_did",
+      "target": "sdd_task_1_report_step_4_added_project_info_js_before_setstatus_function",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-1-report.md",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "sdd_task_1_report_what_i_did",
+      "target": "sdd_task_1_report_step_5_replaced_agency_input_references",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-2-brief.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "sdd_task_2_brief",
+      "target": "sdd_task_2_brief_task_2_photo_captions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-2-report.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "sdd_task_2_report",
+      "target": "sdd_task_2_report_task_2_implementation_report_photo_captions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-2-report.md",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "sdd_task_2_report_task_2_implementation_report_photo_captions",
+      "target": "sdd_task_2_report_concerns",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-2-report.md",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "sdd_task_2_report_task_2_implementation_report_photo_captions",
+      "target": "sdd_task_2_report_deviations_from_brief",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-2-report.md",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "sdd_task_2_report_task_2_implementation_report_photo_captions",
+      "target": "sdd_task_2_report_verification_output",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-2-report.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "sdd_task_2_report_task_2_implementation_report_photo_captions",
+      "target": "sdd_task_2_report_what_i_did",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-2-report.md",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "sdd_task_2_report_what_i_did",
+      "target": "sdd_task_2_report_changes_made_index_html_only",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-3-brief.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "sdd_task_3_brief",
+      "target": "sdd_task_3_brief_task_3_word_export_cover_page",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-3-report.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "sdd_task_3_report",
+      "target": "sdd_task_3_report_task_3_completion_report_word_export_cover_page",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-3-report.md",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "sdd_task_3_report_task_3_completion_report_word_export_cover_page",
+      "target": "sdd_task_3_report_concerns",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-3-report.md",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "sdd_task_3_report_task_3_completion_report_word_export_cover_page",
+      "target": "sdd_task_3_report_deviations_from_brief",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-3-report.md",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "sdd_task_3_report_task_3_completion_report_word_export_cover_page",
+      "target": "sdd_task_3_report_verification_output",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-3-report.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "sdd_task_3_report_task_3_completion_report_word_export_cover_page",
+      "target": "sdd_task_3_report_what_i_did",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-4-brief.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "sdd_task_4_brief",
+      "target": "sdd_task_4_brief_task_4_word_export_bookmarks_static_linked_toc",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-4-report.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "sdd_task_4_report",
+      "target": "sdd_task_4_report_task_4_report_word_export_bookmarks_static_toc",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-4-report.md",
+      "source_location": "L57",
+      "weight": 1.0,
+      "source": "sdd_task_4_report_task_4_report_word_export_bookmarks_static_toc",
+      "target": "sdd_task_4_report_concerns",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-4-report.md",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "sdd_task_4_report_task_4_report_word_export_bookmarks_static_toc",
+      "target": "sdd_task_4_report_deviations_from_brief",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-4-report.md",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "sdd_task_4_report_task_4_report_word_export_bookmarks_static_toc",
+      "target": "sdd_task_4_report_verification_output",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-4-report.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "sdd_task_4_report_task_4_report_word_export_bookmarks_static_toc",
+      "target": "sdd_task_4_report_what_i_did",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-4-report.md",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "sdd_task_4_report_what_i_did",
+      "target": "sdd_task_4_report_changes_made",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-5-brief.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "sdd_task_5_brief",
+      "target": "sdd_task_5_brief_task_5_word_export_headers_footers_figure_captions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "sdd_task_5_report",
+      "target": "sdd_task_5_report_task_5_completion_report_word_export_headers_footers_figure_captions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "sdd_task_5_report_task_5_completion_report_word_export_headers_footers_figure_captions",
+      "target": "sdd_task_5_report_concerns",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L59",
+      "weight": 1.0,
+      "source": "sdd_task_5_report_task_5_completion_report_word_export_headers_footers_figure_captions",
+      "target": "sdd_task_5_report_deviations_from_brief",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "sdd_task_5_report_task_5_completion_report_word_export_headers_footers_figure_captions",
+      "target": "sdd_task_5_report_verification_output",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "sdd_task_5_report_task_5_completion_report_word_export_headers_footers_figure_captions",
+      "target": "sdd_task_5_report_what_i_did",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "sdd_task_5_report_what_i_did",
+      "target": "sdd_task_5_report_step_1_destructure_header_and_tabstoptype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "sdd_task_5_report_what_i_did",
+      "target": "sdd_task_5_report_step_2_figure_captions_with_photo_caption_location_fallback",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "sdd_task_5_report_what_i_did",
+      "target": "sdd_task_5_report_step_3_headers_and_footers",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "sdd_task_5_report_what_i_did",
+      "target": "sdd_task_5_report_step_4_sections_configuration_with_titlepage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "sdd_task_5_report_verification_output",
+      "target": "sdd_task_5_report_diff_review",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "sdd_task_5_report_verification_output",
+      "target": "sdd_task_5_report_git_commit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "sdd_task_5_report_verification_output",
+      "target": "sdd_task_5_report_grep_verification",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".superpowers/sdd/task-5-report.md",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "sdd_task_5_report_verification_output",
+      "target": "sdd_task_5_report_javascript_parse_check",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-07-02-annotation-import.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "plans_2026_07_02_annotation_import",
+      "target": "plans_2026_07_02_annotation_import_annotation_import_survey_gps_implementation_plan",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-07-02-annotation-import.md",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "plans_2026_07_02_annotation_import_annotation_import_survey_gps_implementation_plan",
+      "target": "plans_2026_07_02_annotation_import_global_constraints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-07-02-annotation-import.md",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "plans_2026_07_02_annotation_import_global_constraints",
+      "target": "plans_2026_07_02_annotation_import_task_1_data_model_symbol_tables_drawing_primitives",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-07-02-annotation-import.md",
+      "source_location": "L110",
+      "weight": 1.0,
+      "source": "plans_2026_07_02_annotation_import_global_constraints",
+      "target": "plans_2026_07_02_annotation_import_task_2_toolbar_ui_html_css",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-07-02-annotation-import.md",
+      "source_location": "L157",
+      "weight": 1.0,
+      "source": "plans_2026_07_02_annotation_import_global_constraints",
+      "target": "plans_2026_07_02_annotation_import_task_3_tool_selection_pointer_handlers_unified_undo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-07-02-annotation-import.md",
+      "source_location": "L271",
+      "weight": 1.0,
+      "source": "plans_2026_07_02_annotation_import_global_constraints",
+      "target": "plans_2026_07_02_annotation_import_task_4_rendering_exports_annotated_state_checks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-07-02-annotation-import.md",
+      "source_location": "L322",
+      "weight": 1.0,
+      "source": "plans_2026_07_02_annotation_import_global_constraints",
+      "target": "plans_2026_07_02_annotation_import_task_5_end_to_end_manual_verification",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-07-03-professional-report.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "plans_2026_07_03_professional_report",
+      "target": "plans_2026_07_03_professional_report_professional_survey_report_upgrade_implementation_plan",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-07-03-professional-report.md",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "plans_2026_07_03_professional_report_professional_survey_report_upgrade_implementation_plan",
+      "target": "plans_2026_07_03_professional_report_global_constraints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-07-03-professional-report.md",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "plans_2026_07_03_professional_report_professional_survey_report_upgrade_implementation_plan",
+      "target": "plans_2026_07_03_professional_report_verification_harness_used_by_every_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-07-03-professional-report.md",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "plans_2026_07_03_professional_report_verification_harness_used_by_every_task",
+      "target": "plans_2026_07_03_professional_report_task_1_project_info_panel_ui_localstorage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-07-03-professional-report.md",
+      "source_location": "L191",
+      "weight": 1.0,
+      "source": "plans_2026_07_03_professional_report_verification_harness_used_by_every_task",
+      "target": "plans_2026_07_03_professional_report_task_2_photo_captions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-07-03-professional-report.md",
+      "source_location": "L265",
+      "weight": 1.0,
+      "source": "plans_2026_07_03_professional_report_verification_harness_used_by_every_task",
+      "target": "plans_2026_07_03_professional_report_task_3_word_export_cover_page",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-07-03-professional-report.md",
+      "source_location": "L345",
+      "weight": 1.0,
+      "source": "plans_2026_07_03_professional_report_verification_harness_used_by_every_task",
+      "target": "plans_2026_07_03_professional_report_task_4_word_export_bookmarks_static_linked_toc",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-07-03-professional-report.md",
+      "source_location": "L406",
+      "weight": 1.0,
+      "source": "plans_2026_07_03_professional_report_verification_harness_used_by_every_task",
+      "target": "plans_2026_07_03_professional_report_task_5_word_export_headers_footers_figure_captions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-07-03-professional-report.md",
+      "source_location": "L473",
+      "weight": 1.0,
+      "source": "plans_2026_07_03_professional_report_verification_harness_used_by_every_task",
+      "target": "plans_2026_07_03_professional_report_task_6_full_manual_verification_pass",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "specs_2026_07_02_annotation_import_design",
+      "target": "specs_2026_07_02_annotation_import_design_annotation_import_survey_drawing_tools_gps_app",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "specs_2026_07_02_annotation_import_design_annotation_import_survey_drawing_tools_gps_app",
+      "target": "specs_2026_07_02_annotation_import_design_approach_chosen_extend_existing_system",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L58",
+      "weight": 1.0,
+      "source": "specs_2026_07_02_annotation_import_design_annotation_import_survey_drawing_tools_gps_app",
+      "target": "specs_2026_07_02_annotation_import_design_behavior",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "specs_2026_07_02_annotation_import_design_annotation_import_survey_drawing_tools_gps_app",
+      "target": "specs_2026_07_02_annotation_import_design_data_model",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "specs_2026_07_02_annotation_import_design_annotation_import_survey_drawing_tools_gps_app",
+      "target": "specs_2026_07_02_annotation_import_design_goal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L86",
+      "weight": 1.0,
+      "source": "specs_2026_07_02_annotation_import_design_annotation_import_survey_drawing_tools_gps_app",
+      "target": "specs_2026_07_02_annotation_import_design_out_of_scope_yagni_matches_survey_behavior",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L73",
+      "weight": 1.0,
+      "source": "specs_2026_07_02_annotation_import_design_annotation_import_survey_drawing_tools_gps_app",
+      "target": "specs_2026_07_02_annotation_import_design_rendering_and_export",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "specs_2026_07_02_annotation_import_design_annotation_import_survey_drawing_tools_gps_app",
+      "target": "specs_2026_07_02_annotation_import_design_source_material_survey_app",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L46",
+      "weight": 1.0,
+      "source": "specs_2026_07_02_annotation_import_design_annotation_import_survey_drawing_tools_gps_app",
+      "target": "specs_2026_07_02_annotation_import_design_toolbar_ui",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-07-02-annotation-import-design.md",
+      "source_location": "L91",
+      "weight": 1.0,
+      "source": "specs_2026_07_02_annotation_import_design_annotation_import_survey_drawing_tools_gps_app",
+      "target": "specs_2026_07_02_annotation_import_design_validation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-07-03-professional-report-design.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "specs_2026_07_03_professional_report_design",
+      "target": "specs_2026_07_03_professional_report_design_professional_survey_report_upgrade_design",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-07-03-professional-report-design.md",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "specs_2026_07_03_professional_report_design_professional_survey_report_upgrade_design",
+      "target": "specs_2026_07_03_professional_report_design_1_project_info_panel_ui",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-07-03-professional-report-design.md",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "specs_2026_07_03_professional_report_design_professional_survey_report_upgrade_design",
+      "target": "specs_2026_07_03_professional_report_design_2_photo_captions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-07-03-professional-report-design.md",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "specs_2026_07_03_professional_report_design_professional_survey_report_upgrade_design",
+      "target": "specs_2026_07_03_professional_report_design_3_word_document_rebuild_buildworddocumentblob",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-07-03-professional-report-design.md",
+      "source_location": "L66",
+      "weight": 1.0,
+      "source": "specs_2026_07_03_professional_report_design_professional_survey_report_upgrade_design",
+      "target": "specs_2026_07_03_professional_report_design_4_error_handling",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-07-03-professional-report-design.md",
+      "source_location": "L73",
+      "weight": 1.0,
+      "source": "specs_2026_07_03_professional_report_design_professional_survey_report_upgrade_design",
+      "target": "specs_2026_07_03_professional_report_design_5_testing_manual",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-07-03-professional-report-design.md",
+      "source_location": "L80",
+      "weight": 1.0,
+      "source": "specs_2026_07_03_professional_report_design_professional_survey_report_upgrade_design",
+      "target": "specs_2026_07_03_professional_report_design_out_of_scope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-07-03-professional-report-design.md",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "specs_2026_07_03_professional_report_design_professional_survey_report_upgrade_design",
+      "target": "specs_2026_07_03_professional_report_design_purpose",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "built_at_commit": "f31e4cf7a520d12aad1071603242d545cb5c0fce"
+}

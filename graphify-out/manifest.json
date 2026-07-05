@@ -1,0 +1,112 @@
+{
+  ".claude/launch.json": {
+    "mtime": 1783108238.624,
+    "ast_hash": "75dbd1aa930314bc4693cf78d9a26839",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/progress.md": {
+    "mtime": 1783108232.882,
+    "ast_hash": "c1ecfa93671e90134d6afca789de5e9b",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-1-brief.md": {
+    "mtime": 1783107320.409,
+    "ast_hash": "b4df62e605546a0bff243e250a32324a",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-1-report.md": {
+    "mtime": 1783107424.978,
+    "ast_hash": "cc932be0e7a19119adb6fa5300577759",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-2-brief.md": {
+    "mtime": 1783107538.03,
+    "ast_hash": "ee28f77473b5c719feffcd9d383cc7bd",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-2-report.md": {
+    "mtime": 1783107621.158,
+    "ast_hash": "1ef272d0a672eac8e4f5f748e5ca4d84",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-3-brief.md": {
+    "mtime": 1783107712.982,
+    "ast_hash": "fe203846035099a3b747a3625fc18efb",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-3-report.md": {
+    "mtime": 1783107801.001,
+    "ast_hash": "eef8dab31e6dc22820094c9ae7c9c2e2",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-4-brief.md": {
+    "mtime": 1783107927.652,
+    "ast_hash": "74706071631c009f6b4c5c8c6f656c49",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-4-report.md": {
+    "mtime": 1783107999.41,
+    "ast_hash": "07e82af72526a4d9dceaf602fae79895",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-5-brief.md": {
+    "mtime": 1783108074.25,
+    "ast_hash": "b6a801dc15f8de069c8e813c20d32968",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-5-report.md": {
+    "mtime": 1783108146.643,
+    "ast_hash": "a0a3f1bb559f40601994878860787bf4",
+    "semantic_hash": ""
+  },
+  "brinc_tank_gps_production_package/index.html": {
+    "mtime": 1783061594.0,
+    "ast_hash": "2bf86b8028bff1cc77edc95785d43fd6",
+    "semantic_hash": ""
+  },
+  "brinc_tank_gps_professional.html": {
+    "mtime": 1783036751.245,
+    "ast_hash": "7a1c1e97fba182b019eb284e78c26064",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-07-02-annotation-import.md": {
+    "mtime": 1783032045.923,
+    "ast_hash": "531ef6b16ee02306ec3ff3fdc7fdb14a",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-07-03-professional-report.md": {
+    "mtime": 1783107254.647,
+    "ast_hash": "68b0e74eeecb744e9083f327293f02f1",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-07-02-annotation-import-design.md": {
+    "mtime": 1783032045.934,
+    "ast_hash": "54dbc94b707a7aea99068c8e919236c7",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-07-03-professional-report-design.md": {
+    "mtime": 1783105707.846,
+    "ast_hash": "13cf5c5b7248d82613dc442de370a6e0",
+    "semantic_hash": ""
+  },
+  "index - Copy.html": {
+    "mtime": 1783032045.947,
+    "ast_hash": "d17b3922fd2b9a7a23ce523af36a99da",
+    "semantic_hash": ""
+  },
+  "index.html": {
+    "mtime": 1783108117.027,
+    "ast_hash": "35b14a5c299d4147717a54e80df78802",
+    "semantic_hash": ""
+  },
+  "mobile.html": {
+    "mtime": 1783043259.584,
+    "ast_hash": "196ad64a96e775f83c5f4083de7bd795",
+    "semantic_hash": ""
+  },
+  "brinc_tank_gps_production_package/assets/brinc-logo.png": {
+    "mtime": 1783061594.0,
+    "ast_hash": "911d36d2996aa1a6729213189435e423",
+    "semantic_hash": ""
+  }
+}
